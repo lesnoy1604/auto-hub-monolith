@@ -1,0 +1,1782 @@
+basePath: /api
+definitions:
+  domain.Car:
+    properties:
+      brand:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      inspection_before:
+        type: string
+      mileage:
+        type: integer
+      model:
+        type: string
+      osago_before:
+        type: string
+      plate_number:
+        type: string
+      status:
+        $ref: '#/definitions/domain.CarStatus'
+      updated_at:
+        type: string
+      vin:
+        type: string
+      year:
+        type: integer
+    type: object
+  domain.CarStatus:
+    enum:
+    - FREE
+    - RENTED
+    - REPAIR
+    - SOLD
+    type: string
+    x-enum-varnames:
+    - CarStatusFree
+    - CarStatusRented
+    - CarStatusRepair
+    - CarStatusSold
+  domain.Contract:
+    properties:
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ContractStatus'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  domain.ContractStatus:
+    enum:
+    - ACTIVE
+    - COMPLETED
+    - CANCELLED
+    type: string
+    x-enum-varnames:
+    - ContractStatusActive
+    - ContractStatusCompleted
+    - ContractStatusCancelled
+  domain.Driver:
+    properties:
+      created_at:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      license_num:
+        type: string
+      passport_num:
+        type: string
+      phone:
+        type: string
+      status:
+        $ref: '#/definitions/domain.DriverStatus'
+      updated_at:
+        type: string
+    type: object
+  domain.DriverStatus:
+    enum:
+    - ACTIVE
+    - INACTIVE
+    type: string
+    x-enum-varnames:
+    - DriverStatusActive
+    - DriverStatusInactive
+  domain.Fine:
+    properties:
+      amount:
+        type: number
+      car_id:
+        type: integer
+      contract_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      driver_id:
+        type: integer
+      fine_date:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.FineStatus'
+    type: object
+  domain.FineStatus:
+    enum:
+    - UNPAID
+    - PAID
+    - DISPUTED
+    type: string
+    x-enum-varnames:
+    - FineStatusUnpaid
+    - FineStatusPaid
+    - FineStatusDisputed
+  domain.Payment:
+    properties:
+      amount:
+        type: number
+      contract_id:
+        type: integer
+      created_at:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.PaymentStatus'
+    type: object
+  domain.PaymentStatus:
+    enum:
+    - PAID
+    - UNPAID
+    - OVERDUE
+    type: string
+    x-enum-varnames:
+    - PaymentStatusPaid
+    - PaymentStatusUnpaid
+    - PaymentStatusOverdue
+  dto.ActiveContractBrief:
+    properties:
+      driver:
+        $ref: '#/definitions/dto.DriverName'
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      start_date:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+    type: object
+  dto.ActiveContractForDriver:
+    properties:
+      car:
+        $ref: '#/definitions/dto.CarBrief'
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
+  dto.CarBrief:
+    properties:
+      brand:
+        type: string
+      model:
+        type: string
+      plate_number:
+        type: string
+    type: object
+  dto.CarDetailResponse:
+    properties:
+      brand:
+        type: string
+      contracts:
+        items:
+          $ref: '#/definitions/dto.ContractForCarDetail'
+        type: array
+      created_at:
+        type: string
+      fines:
+        items:
+          $ref: '#/definitions/domain.Fine'
+        type: array
+      id:
+        type: integer
+      inspection_before:
+        type: string
+      mileage:
+        type: integer
+      model:
+        type: string
+      osago_before:
+        type: string
+      plate_number:
+        type: string
+      status:
+        $ref: '#/definitions/domain.CarStatus'
+      updated_at:
+        type: string
+      vin:
+        type: string
+      year:
+        type: integer
+    type: object
+  dto.CarForFine:
+    properties:
+      brand:
+        type: string
+      id:
+        type: integer
+      model:
+        type: string
+      plate_number:
+        type: string
+    type: object
+  dto.CarForPayment:
+    properties:
+      brand:
+        type: string
+      id:
+        type: integer
+      model:
+        type: string
+      plate_number:
+        type: string
+    type: object
+  dto.CarStats:
+    properties:
+      FREE:
+        type: integer
+      RENTED:
+        type: integer
+      REPAIR:
+        type: integer
+      SOLD:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.CarWithContracts:
+    properties:
+      brand:
+        type: string
+      contracts:
+        items:
+          $ref: '#/definitions/dto.ActiveContractBrief'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      inspection_before:
+        type: string
+      mileage:
+        type: integer
+      model:
+        type: string
+      osago_before:
+        type: string
+      plate_number:
+        type: string
+      status:
+        $ref: '#/definitions/domain.CarStatus'
+      updated_at:
+        type: string
+      vin:
+        type: string
+      year:
+        type: integer
+    type: object
+  dto.CarWithYear:
+    properties:
+      brand:
+        type: string
+      model:
+        type: string
+      plate_number:
+        type: string
+      year:
+        type: integer
+    type: object
+  dto.CarsListResponse:
+    properties:
+      cars:
+        items:
+          $ref: '#/definitions/dto.CarWithContracts'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.ContractDetailResponse:
+    properties:
+      car:
+        $ref: '#/definitions/domain.Car'
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver:
+        $ref: '#/definitions/domain.Driver'
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      payments:
+        items:
+          $ref: '#/definitions/domain.Payment'
+        type: array
+      remaining_balance:
+        type: number
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ContractStatus'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractForCarDetail:
+    properties:
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver:
+        $ref: '#/definitions/domain.Driver'
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      payments:
+        items:
+          $ref: '#/definitions/domain.Payment'
+        type: array
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ContractStatus'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractForFine:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.ContractForPayment:
+    properties:
+      car:
+        $ref: '#/definitions/dto.CarForPayment'
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver:
+        $ref: '#/definitions/dto.DriverForPayment'
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      start_date:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractListItem:
+    properties:
+      car:
+        $ref: '#/definitions/dto.CarBrief'
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver:
+        $ref: '#/definitions/dto.DriverName'
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      remaining_balance:
+        type: number
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ContractStatus'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractResponse:
+    properties:
+      car_id:
+        type: integer
+      created_at:
+        type: string
+      driver_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      remaining_balance:
+        type: number
+      start_date:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ContractStatus'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractStats:
+    properties:
+      active:
+        type: integer
+    type: object
+  dto.ContractSummary:
+    properties:
+      id:
+        type: integer
+      paid_amount:
+        type: number
+      remaining_balance:
+        type: number
+    type: object
+  dto.ContractWithCar:
+    properties:
+      car:
+        $ref: '#/definitions/dto.CarWithYear'
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: integer
+      monthly_payment:
+        type: number
+      paid_amount:
+        type: number
+      start_date:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  dto.ContractsListResponse:
+    properties:
+      contracts:
+        items:
+          $ref: '#/definitions/dto.ContractListItem'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.CreateCarRequest:
+    properties:
+      brand:
+        type: string
+      inspection_before:
+        type: string
+      mileage:
+        minimum: 0
+        type: integer
+      model:
+        type: string
+      osago_before:
+        type: string
+      plate_number:
+        type: string
+      status:
+        enum:
+        - FREE
+        - RENTED
+        - REPAIR
+        - SOLD
+        type: string
+      vin:
+        type: string
+      year:
+        maximum: 2100
+        minimum: 1900
+        type: integer
+    required:
+    - brand
+    - model
+    - plate_number
+    - status
+    - vin
+    - year
+    type: object
+  dto.CreateContractRequest:
+    properties:
+      car_id:
+        type: integer
+      driver_id:
+        type: integer
+      monthly_payment:
+        type: number
+      start_date:
+        type: string
+      total_amount:
+        type: number
+    required:
+    - car_id
+    - driver_id
+    - monthly_payment
+    - start_date
+    - total_amount
+    type: object
+  dto.CreateDriverRequest:
+    properties:
+      full_name:
+        type: string
+      license_num:
+        type: string
+      passport_num:
+        type: string
+      phone:
+        type: string
+      status:
+        enum:
+        - ACTIVE
+        - INACTIVE
+        type: string
+    required:
+    - full_name
+    - license_num
+    - passport_num
+    - phone
+    - status
+    type: object
+  dto.CreateFineRequest:
+    properties:
+      amount:
+        type: number
+      car_id:
+        type: integer
+      contract_id:
+        type: integer
+      description:
+        type: string
+      driver_id:
+        type: integer
+      fine_date:
+        type: string
+    required:
+    - amount
+    - car_id
+    - description
+    - fine_date
+    type: object
+  dto.DashboardResponse:
+    properties:
+      cars:
+        $ref: '#/definitions/dto.CarStats'
+      contracts:
+        $ref: '#/definitions/dto.ContractStats'
+      fines:
+        $ref: '#/definitions/dto.FineStats'
+      payments:
+        $ref: '#/definitions/dto.PaymentStats'
+      top_debtors:
+        items:
+          $ref: '#/definitions/dto.TopDebtor'
+        type: array
+    type: object
+  dto.DriverDetailResponse:
+    properties:
+      contracts:
+        items:
+          $ref: '#/definitions/dto.ContractWithCar'
+        type: array
+      created_at:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      license_num:
+        type: string
+      passport_num:
+        type: string
+      phone:
+        type: string
+      status:
+        $ref: '#/definitions/domain.DriverStatus'
+      updated_at:
+        type: string
+    type: object
+  dto.DriverForFine:
+    properties:
+      full_name:
+        type: string
+      id:
+        type: integer
+    type: object
+  dto.DriverForPayment:
+    properties:
+      full_name:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+    type: object
+  dto.DriverName:
+    properties:
+      full_name:
+        type: string
+    type: object
+  dto.DriverWithContracts:
+    properties:
+      contracts:
+        items:
+          $ref: '#/definitions/dto.ActiveContractForDriver'
+        type: array
+      created_at:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      license_num:
+        type: string
+      passport_num:
+        type: string
+      phone:
+        type: string
+      status:
+        $ref: '#/definitions/domain.DriverStatus'
+      updated_at:
+        type: string
+    type: object
+  dto.DriversListResponse:
+    properties:
+      drivers:
+        items:
+          $ref: '#/definitions/dto.DriverWithContracts'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.FineStats:
+    properties:
+      unpaid_amount:
+        type: number
+      unpaid_count:
+        type: integer
+    type: object
+  dto.FineWithRelations:
+    properties:
+      amount:
+        type: number
+      car:
+        $ref: '#/definitions/dto.CarForFine'
+      car_id:
+        type: integer
+      contract:
+        $ref: '#/definitions/dto.ContractForFine'
+      contract_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      driver:
+        $ref: '#/definitions/dto.DriverForFine'
+      driver_id:
+        type: integer
+      fine_date:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.FineStatus'
+    type: object
+  dto.FinesListResponse:
+    properties:
+      fines:
+        items:
+          $ref: '#/definitions/dto.FineWithRelations'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  dto.PayPaymentRequest:
+    properties:
+      paid_at:
+        type: string
+      payment_id:
+        type: integer
+    required:
+    - payment_id
+    type: object
+  dto.PayPaymentResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/dto.ContractSummary'
+      payment:
+        $ref: '#/definitions/domain.Payment'
+    type: object
+  dto.PaymentStats:
+    properties:
+      collected_this_month:
+        type: number
+      overdue_amount:
+        type: number
+      overdue_count:
+        type: integer
+      upcoming:
+        items:
+          $ref: '#/definitions/dto.UpcomingPayment'
+        type: array
+    type: object
+  dto.PaymentWithContract:
+    properties:
+      amount:
+        type: number
+      contract:
+        $ref: '#/definitions/dto.ContractForPayment'
+      contract_id:
+        type: integer
+      created_at:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.PaymentStatus'
+    type: object
+  dto.PaymentsListResponse:
+    properties:
+      payments:
+        items:
+          $ref: '#/definitions/dto.PaymentWithContract'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.TopDebtor:
+    properties:
+      car_label:
+        type: string
+      car_plate:
+        type: string
+      contract_id:
+        type: integer
+      driver_id:
+        type: integer
+      full_name:
+        type: string
+      max_days_overdue:
+        type: integer
+      payment_count:
+        type: integer
+      total_overdue:
+        type: number
+    type: object
+  dto.UpcomingPayment:
+    properties:
+      amount:
+        type: number
+      contract:
+        $ref: '#/definitions/dto.UpcomingPaymentContract'
+      contract_id:
+        type: integer
+      created_at:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.PaymentStatus'
+    type: object
+  dto.UpcomingPaymentCar:
+    properties:
+      id:
+        type: integer
+      plate_number:
+        type: string
+    type: object
+  dto.UpcomingPaymentContract:
+    properties:
+      car:
+        $ref: '#/definitions/dto.UpcomingPaymentCar'
+      driver:
+        $ref: '#/definitions/dto.UpcomingPaymentDriver'
+      id:
+        type: integer
+    type: object
+  dto.UpcomingPaymentDriver:
+    properties:
+      full_name:
+        type: string
+    type: object
+  dto.UpdateCarRequest:
+    properties:
+      brand:
+        type: string
+      inspection_before:
+        type: string
+      mileage:
+        minimum: 0
+        type: integer
+      model:
+        type: string
+      osago_before:
+        type: string
+      plate_number:
+        type: string
+      status:
+        enum:
+        - FREE
+        - RENTED
+        - REPAIR
+        - SOLD
+        type: string
+      vin:
+        type: string
+      year:
+        maximum: 2100
+        minimum: 1900
+        type: integer
+    required:
+    - brand
+    - model
+    - plate_number
+    - status
+    - vin
+    - year
+    type: object
+  dto.UpdateContractRequest:
+    properties:
+      end_date:
+        type: string
+      monthly_payment:
+        type: number
+      status:
+        enum:
+        - ACTIVE
+        - COMPLETED
+        - CANCELLED
+        type: string
+      total_amount:
+        type: number
+    type: object
+  dto.UpdateDriverRequest:
+    properties:
+      full_name:
+        type: string
+      license_num:
+        type: string
+      passport_num:
+        type: string
+      phone:
+        type: string
+      status:
+        enum:
+        - ACTIVE
+        - INACTIVE
+        type: string
+    required:
+    - full_name
+    - license_num
+    - passport_num
+    - phone
+    - status
+    type: object
+  dto.UpdateFineRequest:
+    properties:
+      paid_at:
+        type: string
+      status:
+        enum:
+        - UNPAID
+        - PAID
+        - DISPUTED
+        type: string
+    required:
+    - status
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API для управления арендой автомобилей (CRM).
+  title: Auto Hub API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Возвращает JWT токен по email и паролю
+      parameters:
+      - description: Credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Войти в систему
+      tags:
+      - auth
+  /cars:
+    get:
+      parameters:
+      - description: Фильтр по статусу (FREE, RENTED, REPAIR, SOLD)
+        in: query
+        name: status
+        type: string
+      - description: Поиск по номеру (ILIKE)
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CarsListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Список машин
+      tags:
+      - cars
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные машины
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCarRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Car'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать машину
+      tags:
+      - cars
+  /cars/{id}:
+    delete:
+      parameters:
+      - description: ID машины
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить машину
+      tags:
+      - cars
+    get:
+      parameters:
+      - description: ID машины
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CarDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Детали машины
+      tags:
+      - cars
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID машины
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные машины
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Car'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить машину
+      tags:
+      - cars
+  /contracts:
+    get:
+      parameters:
+      - description: Фильтр по статусу (ACTIVE, COMPLETED, CANCELLED)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ContractsListResponse'
+      security:
+      - BearerAuth: []
+      summary: Список договоров
+      tags:
+      - contracts
+    post:
+      consumes:
+      - application/json
+      description: Создаёт договор, меняет статус машины на RENTED и генерирует платёжный
+        график
+      parameters:
+      - description: Данные договора
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateContractRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Contract'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Машина не свободна
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать договор
+      tags:
+      - contracts
+  /contracts/{id}:
+    delete:
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить договор
+      tags:
+      - contracts
+    get:
+      description: Возвращает договор с машиной, водителем и платежами. Пересчитывает
+        paid_amount.
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ContractDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Детали договора
+      tags:
+      - contracts
+    put:
+      consumes:
+      - application/json
+      description: При смене статуса с ACTIVE на другой — освобождает машину (FREE)
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateContractRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ContractResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить договор
+      tags:
+      - contracts
+  /contracts/{id}/payments:
+    get:
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Payment'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Платежи по договору
+      tags:
+      - contracts
+  /dashboard:
+    get:
+      description: Возвращает статистику по машинам, договорам, платежам, штрафам
+        и топ должникам. Все запросы выполняются параллельно.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DashboardResponse'
+      security:
+      - BearerAuth: []
+      summary: Сводная статистика
+      tags:
+      - dashboard
+  /drivers:
+    get:
+      parameters:
+      - description: Фильтр по статусу (ACTIVE, INACTIVE)
+        in: query
+        name: status
+        type: string
+      - description: Поиск по имени (ILIKE)
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriversListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Список водителей
+      tags:
+      - drivers
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные водителя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateDriverRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Driver'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать водителя
+      tags:
+      - drivers
+  /drivers/{id}:
+    delete:
+      parameters:
+      - description: ID водителя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить водителя
+      tags:
+      - drivers
+    get:
+      parameters:
+      - description: ID водителя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriverDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Детали водителя
+      tags:
+      - drivers
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID водителя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные водителя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDriverRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Driver'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить водителя
+      tags:
+      - drivers
+  /fines:
+    get:
+      parameters:
+      - description: Фильтр по статусу (UNPAID, PAID, DISPUTED)
+        in: query
+        name: status
+        type: string
+      - description: Фильтр по машине
+        in: query
+        name: car_id
+        type: integer
+      - description: Фильтр по водителю
+        in: query
+        name: driver_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FinesListResponse'
+      security:
+      - BearerAuth: []
+      summary: Список штрафов
+      tags:
+      - fines
+    post:
+      consumes:
+      - application/json
+      description: Если driver_id не передан — определяется автоматически из активного
+        договора машины
+      parameters:
+      - description: Данные штрафа
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateFineRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Fine'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Создать штраф
+      tags:
+      - fines
+  /fines/{id}:
+    delete:
+      parameters:
+      - description: ID штрафа
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удалить штраф
+      tags:
+      - fines
+    put:
+      consumes:
+      - application/json
+      description: При status=PAID проставляет paid_at. При status!=PAID сбрасывает
+        paid_at в null.
+      parameters:
+      - description: ID штрафа
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новый статус
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateFineRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Fine'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Обновить штраф
+      tags:
+      - fines
+  /health:
+    get:
+      description: Проверяет доступность сервера и базы данных
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - system
+  /payments:
+    get:
+      description: Без фильтра возвращает UNPAID + OVERDUE
+      parameters:
+      - description: PAID, UNPAID, OVERDUE, PENDING (=UNPAID+OVERDUE)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PaymentsListResponse'
+      security:
+      - BearerAuth: []
+      summary: Список платежей
+      tags:
+      - payments
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Отмечает платёж как PAID и пересчитывает paid_amount договора
+        Нельзя удалить оплаченный платёж
+      parameters:
+      - description: ID платежа и дата оплаты
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PayPaymentRequest'
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PayPaymentResponse'
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Платёж уже оплачен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Удалить платёж
+      tags:
+      - payments
+      - payments
+  /payments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: |-
+        Отмечает платёж как PAID и пересчитывает paid_amount договора
+        Нельзя удалить оплаченный платёж
+      parameters:
+      - description: ID платежа и дата оплаты
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PayPaymentRequest'
+      - description: ID платежа
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PayPaymentResponse'
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Платёж уже оплачен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: Удалить платёж
+      tags:
+      - payments
+      - payments
+securityDefinitions:
+  BearerAuth:
+    description: 'Введите токен в формате: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
