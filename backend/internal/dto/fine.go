@@ -7,29 +7,29 @@ import (
 )
 
 type CreateFineRequest struct {
-	CarID       int        `json:"car_id"      validate:"required"`
-	DriverID    *int       `json:"driver_id"`
-	ContractID  *int       `json:"contract_id"`
+	CarID       int        `json:"carId"       validate:"required"`
+	DriverID    *int       `json:"driverId"`
+	ContractID  *int       `json:"contractId"`
 	Amount      float64    `json:"amount"      validate:"required,gt=0"`
 	Description string     `json:"description" validate:"required"`
-	FineDate    time.Time  `json:"fine_date"   validate:"required"`
+	FineDate    time.Time  `json:"fineDate"    validate:"required"`
 }
 
 type UpdateFineRequest struct {
 	Status string     `json:"status" validate:"required,oneof=UNPAID PAID DISPUTED"`
-	PaidAt *time.Time `json:"paid_at"`
+	PaidAt *time.Time `json:"paidAt"`
 }
 
 type CarForFine struct {
 	ID          int    `json:"id"`
-	PlateNumber string `json:"plate_number"`
+	PlateNumber string `json:"plateNumber"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
 }
 
 type DriverForFine struct {
 	ID       int    `json:"id"`
-	FullName string `json:"full_name"`
+	FullName string `json:"fullName"`
 }
 
 type ContractForFine struct {

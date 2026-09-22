@@ -1,9 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Contract, Payment } from '@/shared/types'
 
 export const contractsApi = createApi({
   reducerPath: 'contractsApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ['Contract', 'Payment'],
   endpoints: (builder) => ({
     getContracts: builder.query<Contract[], { status?: string }>({

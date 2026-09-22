@@ -6,8 +6,9 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   server: {
+    host: true,
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': process.env.VITE_BACKEND_URL || 'http://localhost:8080',
     },
   },
 })

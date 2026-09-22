@@ -8,19 +8,19 @@ import (
 )
 
 type CreateDriverRequest struct {
-	FullName    string `json:"full_name"    validate:"required"`
-	Phone       string `json:"phone"        validate:"required"`
-	PassportNum string `json:"passport_num" validate:"required"`
-	LicenseNum  string `json:"license_num"  validate:"required"`
-	Status      string `json:"status"       validate:"required,oneof=ACTIVE INACTIVE"`
+	FullName    string `json:"fullName"    validate:"required"`
+	Phone       string `json:"phone"       validate:"required"`
+	PassportNum string `json:"passportNum" validate:"required"`
+	LicenseNum  string `json:"licenseNum"  validate:"required"`
+	Status      string `json:"status"      validate:"required,oneof=ACTIVE INACTIVE"`
 }
 
 type UpdateDriverRequest struct {
-	FullName    string `json:"full_name"    validate:"required"`
-	Phone       string `json:"phone"        validate:"required"`
-	PassportNum string `json:"passport_num" validate:"required"`
-	LicenseNum  string `json:"license_num"  validate:"required"`
-	Status      string `json:"status"       validate:"required,oneof=ACTIVE INACTIVE"`
+	FullName    string `json:"fullName"    validate:"required"`
+	Phone       string `json:"phone"       validate:"required"`
+	PassportNum string `json:"passportNum" validate:"required"`
+	LicenseNum  string `json:"licenseNum"  validate:"required"`
+	Status      string `json:"status"      validate:"required,oneof=ACTIVE INACTIVE"`
 }
 
 type ActiveContractForDriver struct {
@@ -30,7 +30,7 @@ type ActiveContractForDriver struct {
 }
 
 type CarBrief struct {
-	PlateNumber string `json:"plate_number"`
+	PlateNumber string `json:"plateNumber"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
 }
@@ -48,18 +48,18 @@ type DriversListResponse struct {
 type ContractWithCar struct {
 	ID             int             `json:"id"`
 	Status         string          `json:"status"`
-	TotalAmount    decimal.Decimal `json:"total_amount"`
-	PaidAmount     decimal.Decimal `json:"paid_amount"`
-	MonthlyPayment decimal.Decimal `json:"monthly_payment"`
-	StartDate      time.Time       `json:"start_date"`
-	EndDate        *time.Time      `json:"end_date"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	TotalAmount    decimal.Decimal `json:"totalAmount"`
+	PaidAmount     decimal.Decimal `json:"paidAmount"`
+	MonthlyPayment decimal.Decimal `json:"monthlyPayment"`
+	StartDate      time.Time       `json:"startDate"`
+	EndDate        *time.Time      `json:"endDate"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	UpdatedAt      time.Time       `json:"updatedAt"`
 	Car            CarWithYear     `json:"car"`
 }
 
 type CarWithYear struct {
-	PlateNumber string `json:"plate_number"`
+	PlateNumber string `json:"plateNumber"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`
 	Year        int    `json:"year"`

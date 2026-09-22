@@ -1,9 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Driver } from '@/shared/types'
 
 export const driversApi = createApi({
   reducerPath: 'driversApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ['Driver'],
   endpoints: (builder) => ({
     getDrivers: builder.query<Driver[], { status?: string; search?: string }>({

@@ -16,13 +16,13 @@ const (
 
 type Fine struct {
 	ID          int             `json:"id"`
-	CarID       int             `json:"car_id"`
-	DriverID    int             `json:"driver_id"`
-	ContractID  *int            `json:"contract_id"`
+	CarID       int             `json:"carId"`
+	DriverID    int             `json:"driverId"`
+	ContractID  *int            `json:"contractId"`
 	Amount      decimal.Decimal `json:"amount"`
 	Description string          `json:"description"`
-	FineDate    time.Time       `json:"fine_date"`
+	FineDate    time.Time       `json:"fineDate"`
 	Status      FineStatus      `json:"status"`
-	PaidAt      *time.Time      `json:"paid_at"`
-	CreatedAt   time.Time       `json:"created_at"`
+	PaidAt      *time.Time      `json:"paidAt"`
+	CreatedAt   time.Time       `json:"createdAt"`
 }

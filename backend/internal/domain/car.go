@@ -13,15 +13,15 @@ const (
 
 type Car struct {
 	ID               int        `json:"id"`
-	PlateNumber      string     `json:"plate_number"`
+	PlateNumber      string     `json:"plateNumber"`
 	VIN              string     `json:"vin"`
 	Brand            string     `json:"brand"`
 	Model            string     `json:"model"`
 	Year             int        `json:"year"`
 	Status           CarStatus  `json:"status"`
 	Mileage          int        `json:"mileage"`
-	OsagoBefore      *time.Time `json:"osago_before"`
-	InspectionBefore *time.Time `json:"inspection_before"`
-	CreatedAt        time.Time  `json:"created_at"`
-	UpdatedAt        time.Time  `json:"updated_at"`
+	OsagoBefore      *time.Time `json:"osagoBefore"`
+	InspectionBefore *time.Time `json:"inspectionBefore"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
 }

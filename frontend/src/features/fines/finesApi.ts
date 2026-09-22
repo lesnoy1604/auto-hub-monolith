@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Fine } from '@/shared/types'
 
 interface CreateFineDto {
@@ -12,7 +13,7 @@ interface CreateFineDto {
 
 export const finesApi = createApi({
   reducerPath: 'finesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ['Fine'],
   endpoints: (builder) => ({
     getFines: builder.query<Fine[], { status?: string }>({

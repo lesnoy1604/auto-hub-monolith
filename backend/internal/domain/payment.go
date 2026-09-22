@@ -16,10 +16,10 @@ const (
 
 type Payment struct {
 	ID         int             `json:"id"`
-	ContractID int             `json:"contract_id"`
+	ContractID int             `json:"contractId"`
 	Amount     decimal.Decimal `json:"amount"`
 	Status     PaymentStatus   `json:"status"`
-	DueDate    time.Time       `json:"due_date"`
-	PaidAt     *time.Time      `json:"paid_at"`
-	CreatedAt  time.Time       `json:"created_at"`
+	DueDate    time.Time       `json:"dueDate"`
+	PaidAt     *time.Time      `json:"paidDate"`
+	CreatedAt  time.Time       `json:"createdAt"`
 }

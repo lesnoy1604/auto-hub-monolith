@@ -1,9 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Payment } from '@/shared/types'
 
 export const paymentsApi = createApi({
   reducerPath: 'paymentsApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ['Payment'],
   endpoints: (builder) => ({
     getPayments: builder.query<Payment[], { status?: string }>({

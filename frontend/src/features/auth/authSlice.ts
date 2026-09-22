@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 interface User {
+  id: number
   name: string
   email: string
   role: string
@@ -12,6 +13,24 @@ interface AuthState {
   error: string | null
 }
 
+function parseJWT(token: string): User | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return { id: payload.id, name: payload.name, email: payload.email, role: payload.role }
+  } catch {
+    return null
+  }
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
 const initialState: AuthState = {
   user: null,
   status: 'idle',
@@ -19,33 +38,33 @@ const initialState: AuthState = {
 }
 
 export const checkSession = createAsyncThunk('auth/checkSession', async () => {
-  const res = await fetch('/api/auth/session', { credentials: 'include' })
-  const data = await res.json()
-  if (data?.user) return data.user as User
-  return null
+  const token = localStorage.getItem('access_token')
+  if (!token || isTokenExpired(token)) {
+    localStorage.removeItem('access_token')
+    return null
+  }
+  return parseJWT(token)
 })
 
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
-    const res = await fetch('/api/auth/callback/credentials', {
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ ...credentials, redirect: false }),
+      body: JSON.stringify(credentials),
     })
     if (!res.ok) {
       return rejectWithValue('Неверный email или пароль')
     }
-    const sessionRes = await fetch('/api/auth/session', { credentials: 'include' })
-    const data = await sessionRes.json()
-    if (!data?.user) return rejectWithValue('Неверный email или пароль')
-    return data.user as User
+    const data = await res.json()
+    localStorage.setItem('access_token', data.access_token)
+    return parseJWT(data.access_token)
   },
 )
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' })
+  localStorage.removeItem('access_token')
 })
 
 const authSlice = createSlice({

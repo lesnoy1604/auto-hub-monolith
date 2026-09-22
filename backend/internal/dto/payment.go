@@ -7,8 +7,8 @@ import (
 )
 
 type PayPaymentRequest struct {
-	PaymentID int        `json:"payment_id" validate:"required"`
-	PaidAt    *time.Time `json:"paid_at"`
+	PaymentID int        `json:"paymentId" validate:"required"`
+	PaidAt    *time.Time `json:"paidAt"`
 }
 
 type PaymentWithContract struct {
@@ -23,32 +23,11 @@ type PaymentsListResponse struct {
 
 type ContractSummary struct {
 	ID               int     `json:"id"`
-	PaidAmount       float64 `json:"paid_amount"`
-	RemainingBalance float64 `json:"remaining_balance"`
+	PaidAmount       float64 `json:"paidAmount"`
+	RemainingBalance float64 `json:"remainingBalance"`
 }
 
 type PayPaymentResponse struct {
 	Payment  domain.Payment  `json:"payment"`
 	Contract ContractSummary `json:"contract"`
-}
-
-// UpcomingPayment — для дашборда
-type UpcomingPaymentContract struct {
-	ID     int                   `json:"id"`
-	Car    *UpcomingPaymentCar   `json:"car"`
-	Driver *UpcomingPaymentDriver `json:"driver"`
-}
-
-type UpcomingPaymentCar struct {
-	ID          int    `json:"id"`
-	PlateNumber string `json:"plate_number"`
-}
-
-type UpcomingPaymentDriver struct {
-	FullName string `json:"full_name"`
-}
-
-type UpcomingPayment struct {
-	domain.Payment
-	Contract *UpcomingPaymentContract `json:"contract"`
 }

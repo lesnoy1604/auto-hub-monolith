@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: autohub
+      POSTGRES_USER: autohub
+      POSTGRES_PASSWORD: autohub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autohub"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/app
+      - gomodcache:/root/go/pkg/mod
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://autohub:autohub@db:5432/autohub
+      JWT_SECRET: dev-secret-key
+      PORT: "8080"
+      ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_BACKEND_URL: http://api:8080
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  gomodcache:

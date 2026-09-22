@@ -15,15 +15,15 @@ const (
 )
 
 type Contract struct {
-	ID             int            `json:"id"`
-	CarID          int            `json:"car_id"`
-	DriverID       int            `json:"driver_id"`
-	Status         ContractStatus `json:"status"`
-	TotalAmount    decimal.Decimal `json:"total_amount"`
-	PaidAmount     decimal.Decimal `json:"paid_amount"`
-	MonthlyPayment decimal.Decimal `json:"monthly_payment"`
-	StartDate      time.Time      `json:"start_date"`
-	EndDate        *time.Time     `json:"end_date"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
+	ID             int             `json:"id"`
+	CarID          int             `json:"carId"`
+	DriverID       int             `json:"driverId"`
+	Status         ContractStatus  `json:"status"`
+	TotalAmount    decimal.Decimal `json:"totalAmount"`
+	PaidAmount     decimal.Decimal `json:"paidAmount"`
+	MonthlyPayment decimal.Decimal `json:"monthlyPayment"`
+	StartDate      time.Time       `json:"startDate"`
+	EndDate        *time.Time      `json:"endDate"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	UpdatedAt      time.Time       `json:"updatedAt"`
 }

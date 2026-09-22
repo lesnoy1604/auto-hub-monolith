@@ -11,11 +11,11 @@ const (
 
 type Driver struct {
 	ID          int          `json:"id"`
-	FullName    string       `json:"full_name"`
+	FullName    string       `json:"fullName"`
 	Phone       string       `json:"phone"`
-	PassportNum string       `json:"passport_num"`
-	LicenseNum  string       `json:"license_num"`
+	PassportNum string       `json:"passportNum"`
+	LicenseNum  string       `json:"licenseNum"`
 	Status      DriverStatus `json:"status"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
+	CreatedAt   time.Time    `json:"createdAt"`
+	UpdatedAt   time.Time    `json:"updatedAt"`
 }

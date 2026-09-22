@@ -119,7 +119,7 @@ func (s *DashboardService) Get(ctx context.Context) (*dto.DashboardResponse, err
 	}
 
 	return &dto.DashboardResponse{
-		Cars:     carStats,
+		Cars:      carStats,
 		Contracts: dto.ContractStats{Active: activeContracts},
 		Payments: dto.PaymentStats{
 			OverdueCount:       overdueCount,
@@ -148,20 +148,27 @@ func (s *DashboardService) upcomingPayments(ctx context.Context) ([]dto.Upcoming
 	result := make([]dto.UpcomingPayment, 0, 7)
 	for _, p := range payments {
 		if p.DueDate.After(now) && p.DueDate.Before(deadline) {
-			up := dto.UpcomingPayment{Payment: p}
+			up := dto.UpcomingPayment{
+				ID:         p.ID,
+				ContractID: p.ContractID,
+				DueDate:    p.DueDate,
+				Amount:     p.Amount,
+			}
 
 			contract, err := s.contractRepo.GetByID(ctx, p.ContractID)
 			if err == nil {
-				upc := &dto.UpcomingPaymentContract{ID: contract.ID}
 				car, _ := s.carRepo.GetByID(ctx, contract.CarID)
 				if car != nil {
-					upc.Car = &dto.UpcomingPaymentCar{ID: car.ID, PlateNumber: car.PlateNumber}
+					up.Car = dto.UpcomingPaymentCar{
+						PlateNumber: car.PlateNumber,
+						Brand:       car.Brand,
+						Model:       car.Model,
+					}
 				}
 				driver, _ := s.driverRepo.GetByID(ctx, contract.DriverID)
 				if driver != nil {
-					upc.Driver = &dto.UpcomingPaymentDriver{FullName: driver.FullName}
+					up.Driver = dto.UpcomingPaymentDriver{FullName: driver.FullName}
 				}
-				up.Contract = upc
 			}
 			result = append(result, up)
 			if len(result) == 7 {
@@ -174,13 +181,14 @@ func (s *DashboardService) upcomingPayments(ctx context.Context) ([]dto.Upcoming
 
 func (s *DashboardService) buildTopDebtors(ctx context.Context, overduePayments []domain.Payment) ([]dto.TopDebtor, error) {
 	type group struct {
-		fullName   string
-		carPlate   string
-		carLabel   string
-		contractID int
-		total      decimal.Decimal
-		count      int
-		maxDays    int
+		driverName            string
+		carPlate              string
+		carModel              string
+		contractID            int
+		total                 decimal.Decimal
+		count                 int
+		maxDays               int
+		firstOverduePaymentID int
 	}
 
 	groups := make(map[int]*group)
@@ -202,12 +210,13 @@ func (s *DashboardService) buildTopDebtors(ctx context.Context, overduePayments 
 		g, ok := groups[driver.ID]
 		if !ok {
 			g = &group{
-				fullName:   driver.FullName,
-				contractID: contract.ID,
+				driverName:            driver.FullName,
+				contractID:            contract.ID,
+				firstOverduePaymentID: p.ID,
 			}
 			if car != nil {
 				g.carPlate = car.PlateNumber
-				g.carLabel = car.Brand + " " + car.Model
+				g.carModel = car.Brand + " " + car.Model
 			}
 			groups[driver.ID] = g
 		}
@@ -227,19 +236,20 @@ func (s *DashboardService) buildTopDebtors(ctx context.Context, overduePayments 
 	result := make([]dto.TopDebtor, 0, len(groups))
 	for id, g := range groups {
 		result = append(result, dto.TopDebtor{
-			DriverID:       id,
-			FullName:       g.fullName,
-			CarPlate:       g.carPlate,
-			CarLabel:       g.carLabel,
-			ContractID:     g.contractID,
-			TotalOverdue:   g.total.InexactFloat64(),
-			PaymentCount:   g.count,
-			MaxDaysOverdue: g.maxDays,
+			DriverID:              id,
+			DriverName:            g.driverName,
+			CarPlate:              g.carPlate,
+			CarModel:              g.carModel,
+			ContractID:            g.contractID,
+			TotalDebt:             g.total.InexactFloat64(),
+			OverdueCount:          g.count,
+			MaxDaysOverdue:        g.maxDays,
+			FirstOverduePaymentID: g.firstOverduePaymentID,
 		})
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].TotalOverdue > result[j].TotalOverdue
+		return result[i].TotalDebt > result[j].TotalDebt
 	})
 
 	if len(result) > 5 {

@@ -1,11 +1,17 @@
 package dto
 
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
+
 type DashboardResponse struct {
-	Cars       CarStats       `json:"cars"`
-	Contracts  ContractStats  `json:"contracts"`
-	Payments   PaymentStats   `json:"payments"`
-	Fines      FineStats      `json:"fines"`
-	TopDebtors []TopDebtor    `json:"top_debtors"`
+	Cars       CarStats      `json:"cars"`
+	Contracts  ContractStats `json:"contracts"`
+	Payments   PaymentStats  `json:"payments"`
+	Fines      FineStats     `json:"fines"`
+	TopDebtors []TopDebtor   `json:"topDebtors"`
 }
 
 type CarStats struct {
@@ -21,24 +27,44 @@ type ContractStats struct {
 }
 
 type PaymentStats struct {
-	OverdueCount       int               `json:"overdue_count"`
-	OverdueAmount      float64           `json:"overdue_amount"`
-	CollectedThisMonth float64           `json:"collected_this_month"`
+	OverdueCount       int               `json:"overdueCount"`
+	OverdueAmount      float64           `json:"overdueAmount"`
+	CollectedThisMonth float64           `json:"collectedThisMonth"`
 	Upcoming           []UpcomingPayment `json:"upcoming"`
 }
 
 type FineStats struct {
-	UnpaidCount  int     `json:"unpaid_count"`
-	UnpaidAmount float64 `json:"unpaid_amount"`
+	UnpaidCount  int     `json:"unpaidCount"`
+	UnpaidAmount float64 `json:"unpaidAmount"`
 }
 
 type TopDebtor struct {
-	DriverID       int     `json:"driver_id"`
-	FullName       string  `json:"full_name"`
-	CarPlate       string  `json:"car_plate"`
-	CarLabel       string  `json:"car_label"`
-	ContractID     int     `json:"contract_id"`
-	TotalOverdue   float64 `json:"total_overdue"`
-	PaymentCount   int     `json:"payment_count"`
-	MaxDaysOverdue int     `json:"max_days_overdue"`
+	DriverID              int     `json:"driverId"`
+	DriverName            string  `json:"driverName"`
+	CarPlate              string  `json:"carPlate"`
+	CarModel              string  `json:"carModel"`
+	ContractID            int     `json:"contractId"`
+	TotalDebt             float64 `json:"totalDebt"`
+	OverdueCount          int     `json:"overdueCount"`
+	MaxDaysOverdue        int     `json:"maxDaysOverdue"`
+	FirstOverduePaymentID int     `json:"firstOverduePaymentId"`
+}
+
+type UpcomingPayment struct {
+	ID         int                  `json:"id"`
+	ContractID int                  `json:"contractId"`
+	DueDate    time.Time            `json:"dueDate"`
+	Amount     decimal.Decimal      `json:"amount"`
+	Car        UpcomingPaymentCar   `json:"car"`
+	Driver     UpcomingPaymentDriver `json:"driver"`
+}
+
+type UpcomingPaymentCar struct {
+	PlateNumber string `json:"plateNumber"`
+	Brand       string `json:"brand"`
+	Model       string `json:"model"`
+}
+
+type UpcomingPaymentDriver struct {
+	FullName string `json:"fullName"`
 }
