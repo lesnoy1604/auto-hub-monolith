@@ -70,6 +70,9 @@ func main() {
 	}
 	log.Info().Msg("migrations applied")
 
+	uploadsDir := "uploads"
+	uploadsURL := "http://localhost:" + cfg.Port + "/uploads"
+
 	// Репозитории
 	userRepo := postgres.NewUserRepository(pool)
 	carRepo := postgres.NewCarRepository(pool)
@@ -77,6 +80,7 @@ func main() {
 	contractRepo := postgres.NewContractRepository(pool)
 	paymentRepo := postgres.NewPaymentRepository(pool)
 	fineRepo := postgres.NewFineRepository(pool)
+	inspectionRepo := postgres.NewInspectionRepository(pool)
 
 	// Сервисы
 	authSvc := service.NewAuthService(userRepo, cfg.JWTSecret)
@@ -86,9 +90,10 @@ func main() {
 	paymentSvc := service.NewPaymentService(paymentRepo, contractRepo, carRepo, driverRepo, pool)
 	fineSvc := service.NewFineService(fineRepo, contractRepo, carRepo, driverRepo)
 	dashboardSvc := service.NewDashboardService(carRepo, contractRepo, paymentRepo, fineRepo, driverRepo)
+	inspectionSvc := service.NewInspectionService(inspectionRepo, uploadsDir, uploadsURL)
 
 	// Роутер
-	r := handler.NewRouter(pool, authSvc, carSvc, driverSvc, contractSvc, paymentSvc, fineSvc, dashboardSvc)
+	r := handler.NewRouter(pool, authSvc, carSvc, driverSvc, contractSvc, paymentSvc, fineSvc, dashboardSvc, inspectionSvc, uploadsDir)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

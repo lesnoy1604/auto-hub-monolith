@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/dutik/auto-hub/internal/domain"
 	"github.com/jackc/pgx/v5"
@@ -56,6 +57,12 @@ type PaymentRepository interface {
 	Delete(ctx context.Context, id int) error
 	AggregateOverdue(ctx context.Context) (count int, sum decimal.Decimal, err error)
 	CollectedThisMonth(ctx context.Context) (decimal.Decimal, error)
+}
+
+type InspectionRepository interface {
+	Create(ctx context.Context, carID int, inspectedAt time.Time, notes string) (*domain.CarInspection, error)
+	AddPhoto(ctx context.Context, inspectionID int, angle domain.InspectionAngle, filename string) (*domain.InspectionPhoto, error)
+	ListByCarID(ctx context.Context, carID int) ([]domain.CarInspection, error)
 }
 
 type FineRepository interface {

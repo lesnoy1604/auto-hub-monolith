@@ -25,5 +25,9 @@ Thumbs.db
 # Go
 vendor/
 
+# Uploads (stored on disk, backed up separately)
+backend/uploads/
+uploads/
+
 # Logs
 *.log

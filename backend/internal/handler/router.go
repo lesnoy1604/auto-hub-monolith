@@ -21,6 +21,8 @@ func NewRouter(
 	paymentSvc *service.PaymentService,
 	fineSvc *service.FineService,
 	dashboardSvc *service.DashboardService,
+	inspectionSvc *service.InspectionService,
+	uploadsDir string,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -43,11 +45,15 @@ func NewRouter(
 	paymentH := NewPaymentHandler(paymentSvc)
 	fineH := NewFineHandler(fineSvc)
 	dashboardH := NewDashboardHandler(dashboardSvc)
+	inspectionH := NewInspectionHandler(inspectionSvc)
 
 	// Swagger UI
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
+
+	// Статика для загруженных файлов (без авторизации)
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(uploadsDir))))
 
 	// Публичные маршруты
 	r.Post("/api/auth/login", authH.Login)
@@ -86,6 +92,10 @@ func NewRouter(
 		r.Delete("/api/fines/{id}", fineH.Delete)
 
 		r.Get("/api/dashboard", dashboardH.Get)
+
+		r.Post("/api/cars/{id}/inspections", inspectionH.Create)
+		r.Get("/api/cars/{id}/inspections", inspectionH.ListByCarID)
+		r.Post("/api/inspections/{id}/photos", inspectionH.UploadPhoto)
 	})
 
 	return r

@@ -1,7 +1,7 @@
 BINARY=bin/api
 MAIN=./cmd/api
 
-.PHONY: run stop build test migrate-up migrate-down tidy vet swagger deploy
+.PHONY: run stop build test migrate-up migrate-down tidy vet swagger deploy backup
 
 stop:
 	-lsof -ti :8080 | xargs kill 2>/dev/null; true
@@ -36,3 +36,7 @@ seed:
 # Деплой: make deploy SERVER=user@1.2.3.4
 deploy:
 	bash scripts/deploy.sh $(SERVER)
+
+# Бэкап (запускать на сервере): make backup
+backup:
+	bash scripts/backup.sh

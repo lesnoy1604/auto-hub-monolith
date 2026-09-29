@@ -31,13 +31,15 @@ interface Props {
   open: boolean
   onClose: () => void
   contract?: Contract
+  preselectedCarId?: number
+  preselectedCarLabel?: string
 }
 
-export function ContractFormModal({ open, onClose, contract }: Props) {
+export function ContractFormModal({ open, onClose, contract, preselectedCarId, preselectedCarLabel }: Props) {
   const isEdit = !!contract
   const [createContract, { isLoading: creating, error: createError }] = useCreateContractMutation()
   const [updateContract, { isLoading: updating, error: updateError }] = useUpdateContractMutation()
-  const { data: freeCarsData } = useGetCarsQuery({ status: 'FREE' }, { skip: isEdit })
+  const { data: freeCarsData } = useGetCarsQuery({ status: 'FREE' }, { skip: isEdit || !!preselectedCarId })
   const freeCars = freeCarsData?.cars ?? []
   const { data: activeDriversData } = useGetDriversQuery({ status: 'ACTIVE' }, { skip: isEdit })
   const activeDrivers = activeDriversData?.drivers ?? []
@@ -63,7 +65,10 @@ export function ContractFormModal({ open, onClose, contract }: Props) {
     if (open && isEdit) {
       editForm.reset({ status: contract?.status ?? 'ACTIVE', endDate: contract?.endDate ?? '' })
     }
-  }, [open, contract, isEdit, editForm])
+    if (open && !isEdit && preselectedCarId) {
+      createForm.setValue('carId', preselectedCarId)
+    }
+  }, [open, contract, isEdit, editForm, preselectedCarId, createForm])
 
   const onSubmitCreate = async (data: CreateData) => {
     await createContract(data).unwrap()
@@ -110,7 +115,9 @@ export function ContractFormModal({ open, onClose, contract }: Props) {
         <form onSubmit={createForm.handleSubmit(onSubmitCreate)}>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', marginBottom: '6px', fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#615D73' }}>Машина</label>
-            {freeCars.length === 0 ? (
+            {preselectedCarId ? (
+              <div style={{ padding: '10px 14px', borderRadius: '14px', background: '#F5F4FA', border: '1px solid #E6E3F0', fontSize: '15px', color: '#1a1a2e' }}>{preselectedCarLabel ?? `ID ${preselectedCarId}`}</div>
+            ) : freeCars.length === 0 ? (
               <div style={{ padding: '10px 14px', borderRadius: '14px', background: '#FFF8E1', border: '1px solid #FFE082', color: '#9A7200', fontSize: '14px' }}>Нет свободных машин</div>
             ) : (
               <select {...createForm.register('carId')} style={{ width: '100%', height: '44px', borderRadius: '14px', background: '#F5F4FA', border: '1px solid #E6E3F0', padding: '0 14px', fontSize: '15px', color: '#1a1a2e', outline: 'none', boxSizing: 'border-box' }}>

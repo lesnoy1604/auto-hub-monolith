@@ -79,11 +79,21 @@ else
   fail "Сервис не запустился"
 fi
 
+# ── Cron-бэкап ───────────────────────────────────────────────────────────────
+CRON_JOB="0 3 * * * APP_DIR=$APP_DIR bash $REPO_DIR/scripts/backup.sh >> $APP_DIR/backups/backup.log 2>&1"
+if ! crontab -l 2>/dev/null | grep -qF "backup.sh"; then
+  (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
+  ok "Cron: ежедневный бэкап в 03:00 → $APP_DIR/backups/"
+else
+  echo "→ Cron-бэкап уже настроен"
+fi
+
 # ── Итог ─────────────────────────────────────────────────────────────────────
 echo ""
 PORT=$(grep PORT "$APP_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "8080")
 IP=$(hostname -I | awk '{print $1}')
 echo "  API:     http://${IP}:${PORT}/api/health"
 echo "  Swagger: http://${IP}:${PORT}/swagger/index.html"
+echo "  Бэкапы: $APP_DIR/backups/"
 echo ""
 sudo journalctl -u "$SERVICE_NAME" -n 5 --no-pager
