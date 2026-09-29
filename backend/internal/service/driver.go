@@ -12,17 +12,20 @@ type DriverService struct {
 	driverRepo   repository.DriverRepository
 	contractRepo repository.ContractRepository
 	carRepo      repository.CarRepository
+	paymentRepo  repository.PaymentRepository
 }
 
 func NewDriverService(
 	driverRepo repository.DriverRepository,
 	contractRepo repository.ContractRepository,
 	carRepo repository.CarRepository,
+	paymentRepo repository.PaymentRepository,
 ) *DriverService {
 	return &DriverService{
 		driverRepo:   driverRepo,
 		contractRepo: contractRepo,
 		carRepo:      carRepo,
+		paymentRepo:  paymentRepo,
 	}
 }
 
@@ -104,11 +107,16 @@ func (s *DriverService) GetByID(ctx context.Context, id int) (*dto.DriverDetailR
 		car, _ := s.carRepo.GetByID(ctx, c.CarID)
 		if car != nil {
 			cwc.Car = dto.CarWithYear{
+				ID:          car.ID,
 				PlateNumber: car.PlateNumber,
 				Brand:       car.Brand,
 				Model:       car.Model,
 				Year:        car.Year,
 			}
+		}
+		payments, _ := s.paymentRepo.ListByContractID(ctx, c.ID)
+		if payments != nil {
+			cwc.Payments = payments
 		}
 		detail.Contracts = append(detail.Contracts, cwc)
 	}

@@ -4,21 +4,31 @@ import { useGetDriverByIdQuery, useDeleteDriverMutation } from './driversApi'
 import { DriverFormModal } from './DriverFormModal'
 import { ContractStatusBadge } from '@/features/contracts/ContractStatusBadge'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
+import { PaymentMarkModal } from '@/features/payments/PaymentMarkModal'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
 import { getApiError } from '@/shared/lib/apiError'
-import type { Contract } from '@/shared/types'
+import type { Contract, Payment } from '@/shared/types'
+
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+
+function dotColor(status: string) {
+  if (status === 'PAID') return '#4ade80'
+  if (status === 'OVERDUE') return '#ef4444'
+  return '#fb923c'
+}
 
 export function DriverDetailPage() {
   const { id } = useParams<{ id: string }>()
   const driverId = Number(id)
   const navigate = useNavigate()
-  const { data: driver, isLoading } = useGetDriverByIdQuery(driverId)
+  const { data: driver, isLoading, refetch } = useGetDriverByIdQuery(driverId)
   const [deleteDriver, { isLoading: deleting }] = useDeleteDriverMutation()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [payModal, setPayModal] = useState<Payment | null>(null)
 
   const handleDelete = async () => {
     try {
@@ -32,98 +42,225 @@ export function DriverDetailPage() {
   if (isLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}><Spinner size={36} /></div>
   if (!driver) return <div style={{ color: 'var(--color-text-muted)', padding: 40 }}>Водитель не найден</div>
 
-  const activeContract = driver.contracts?.find(c => c.status === 'ACTIVE')
-  const paidAmount = activeContract?.payments?.filter(p => p.status === 'PAID').reduce((s, p) => s + Number(p.amount), 0) ?? 0
-  const remaining = activeContract ? Number(activeContract.totalAmount) - paidAmount : 0
-  const progress = activeContract ? Math.min(100, Math.round((paidAmount / Number(activeContract.totalAmount)) * 100)) : 0
+  const contracts: Contract[] = (driver.contracts ?? []) as unknown as Contract[]
+  const activeContract = contracts.find(c => c.status === 'ACTIVE')
+  const payments: Payment[] = (activeContract?.payments ?? []) as Payment[]
+  const sortedPayments = [...payments].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+  const nextUnpaid = sortedPayments.find(p => p.status !== 'PAID')
+
+  const paidAmount = Number(activeContract?.paidAmount ?? 0)
+  const totalAmount = Number(activeContract?.totalAmount ?? 0)
+  const remaining = totalAmount - paidAmount
+  const progress = totalAmount > 0 ? Math.min(100, Math.round((paidAmount / totalAmount) * 100)) : 0
+
+  // События
+  const events: { color: string; title: string; subtitle: string }[] = []
+  events.push({ color: '#6B3FE4', title: 'Клиент добавлен в систему', subtitle: formatDate(driver.createdAt) })
+  const sortedContracts = [...contracts].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+  for (const c of sortedContracts) {
+    const car = (c as any).car
+    const plate = car?.plateNumber ?? '—'
+    if (c.endDate && new Date(c.endDate) < new Date() && c.status !== 'COMPLETED') {
+      events.unshift({ color: '#fb923c', title: 'Срок договора истёк, выкуп не завершён', subtitle: formatDate(c.endDate) })
+    }
+    events.push({ color: '#4ade80', title: `Договор открыт · ${plate}`, subtitle: `${formatDate(c.startDate)} · ${formatMoney(c.totalAmount)}` })
+  }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: '34px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{driver.fullName}</h1>
-          <p style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-muted)' }}>{driver.phone}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+      {/* Header card */}
+      <div className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', padding: '24px' }}>
+        {/* Avatar */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 88, height: 88, borderRadius: '16px', border: '2px dashed rgba(186,214,247,0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(186,214,247,0.04)', gap: 4 }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(107,63,228,0.6)" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span style={{ fontSize: '9px', color: 'rgba(186,214,247,0.3)', fontFamily: 'var(--font-mono)' }}>Фото водителя</span>
+          </div>
+          <div style={{ position: 'absolute', bottom: -6, right: -6, width: 24, height: 24, borderRadius: '50%', background: '#6B3FE4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M20.4 14.5A8 8 0 1 1 9.5 3.6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+
+        {/* Name + phone */}
+        <div style={{ flex: 1 }}>
+          <h1 style={{ margin: '0 0 4px', fontSize: '28px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', lineHeight: 1.2 }}>{driver.fullName}</h1>
+          <p style={{ margin: '0 0 16px', fontSize: '15px', color: 'var(--color-text-muted)' }}>{driver.phone}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <span className={driver.status === 'ACTIVE' ? 'badge badge-success' : 'badge badge-neutral'}>
+              {driver.status === 'ACTIVE' ? 'Активен' : 'Неактивен'}
+            </span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Паспорт <span style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>{driver.passportNum}</span>
+            </span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              ВУ <span style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>{driver.licenseNum}</span>
+            </span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Добавлен <span style={{ color: 'var(--color-text-primary)' }}>{formatDate(driver.createdAt)}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
           <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-        {/* Documents */}
-        <div className="card">
-          <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Документы</h3>
-          {[
-            { label: 'Паспорт', value: driver.passportNum },
-            { label: 'Водительское удостоверение', value: driver.licenseNum },
-            { label: 'Дата добавления', value: formatDate(driver.createdAt) },
-            { label: 'Статус', value: driver.status === 'ACTIVE' ? 'Активен' : 'Неактивен' },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--color-neutral-border)' }}>
-              <span style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>{label}</span>
-              <span style={{ fontSize: '14px', color: 'var(--color-text-primary)', fontFamily: label === 'Паспорт' || label === 'Водительское удостоверение' ? 'var(--font-mono)' : undefined }}>{value}</span>
-            </div>
-          ))}
-        </div>
+      {/* Main 2-column */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
 
-        {/* Active contract */}
-        <div className="card">
-          <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Текущий договор</h3>
-          {activeContract ? (
-            <>
-              <div style={{ marginBottom: '12px' }}>
-                {[
-                  { label: 'Машина', value: <Link to={`/cars/${activeContract.carId}`} style={{ color: 'var(--color-accent-text)' }}>{activeContract.car?.plateNumber ?? '—'}</Link> },
-                  { label: 'Начало', value: formatDate(activeContract.startDate) },
-                  { label: 'Платёж/мес', value: formatMoney(activeContract.monthlyPayment) },
-                  { label: 'Остаток', value: formatMoney(remaining) },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>{label}</span>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{value}</span>
+        {/* Left — buyout card */}
+        {activeContract ? (
+          <div className="card">
+            {/* Contract header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Выкуп автомобиля</span>
+                <Link
+                  to={`/cars/${(activeContract as any).car?.id ?? ''}`}
+                  style={{ padding: '3px 10px', borderRadius: '999px', background: 'rgba(107,63,228,0.15)', color: 'var(--color-accent-text)', fontSize: '13px', fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-mono)' }}
+                >
+                  {(activeContract as any).car?.plateNumber ?? '—'}
+                </Link>
+              </div>
+              <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                {formatDate(activeContract.startDate)}{activeContract.endDate ? ` — ${formatDate(activeContract.endDate)}` : ''}
+              </span>
+            </div>
+
+            {/* Amounts */}
+            <p style={{ margin: '0 0 4px', fontSize: '13px', color: 'var(--color-text-muted)' }}>Осталось выплатить</p>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <span style={{ fontSize: '42px', fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{formatMoney(remaining)}</span>
+              <div style={{ display: 'flex', gap: '32px', paddingBottom: '4px' }}>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ margin: '0 0 2px', fontSize: '12px', color: 'var(--color-text-muted)' }}>Оплачено</p>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatMoney(paidAmount)}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ margin: '0 0 2px', fontSize: '12px', color: 'var(--color-text-muted)' }}>Платёж/мес</p>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatMoney(activeContract.monthlyPayment)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(186,214,247,0.1)', overflow: 'hidden', marginBottom: '6px' }}>
+                <div style={{ height: '100%', width: `${progress}%`, background: progress === 100 ? 'var(--color-success)' : 'var(--color-accent)', borderRadius: '999px', transition: 'width 0.3s' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{progress}%</span>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Выкуплено {formatMoney(paidAmount)} из {formatMoney(totalAmount)}</span>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>100%</span>
+              </div>
+            </div>
+
+            {/* Payment months grid */}
+            {sortedPayments.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
+                {sortedPayments.map((p) => {
+                  const d = new Date(p.dueDate)
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => p.status !== 'PAID' && setPayModal(p)}
+                      style={{
+                        padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--color-neutral-border)',
+                        background: 'rgba(186,214,247,0.04)', textAlign: 'left', cursor: p.status !== 'PAID' ? 'pointer' : 'default',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => p.status !== 'PAID' && (e.currentTarget.style.background = 'rgba(186,214,247,0.09)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(186,214,247,0.04)')}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}>{MONTHS_RU[d.getMonth()]}</span>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor(p.status), flexShrink: 0 }} />
+                      </div>
+                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>{formatMoney(p.amount)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '15px' }}>Нет активного договора</p>
+          </div>
+        )}
+
+        {/* Right — events + actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="card">
+            <h3 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>События</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {events.map((ev, i) => (
+                <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: ev.color, flexShrink: 0, marginTop: 3 }} />
+                  <div>
+                    <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.4 }}>{ev.title}</p>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-muted)' }}>{ev.subtitle}</p>
                   </div>
-                ))}
-              </div>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Выкуп</span>
-                  <span style={{ fontSize: '12px', color: 'var(--color-accent-text)' }}>{progress}%</span>
                 </div>
-                <div style={{ height: '6px', borderRadius: '999px', background: 'rgba(186,214,247,0.1)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${progress}%`, background: 'var(--color-accent)', borderRadius: '999px' }} />
-                </div>
-              </div>
-            </>
-          ) : <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Нет активного договора</p>}
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <button
+            className="btn btn-primary"
+            style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: 600, borderRadius: '14px' }}
+            disabled={!nextUnpaid}
+            onClick={() => nextUnpaid && setPayModal(nextUnpaid)}
+          >
+            Принять платёж
+          </button>
+          <button
+            className="btn btn-secondary"
+            style={{ width: '100%', padding: '13px', fontSize: '14px', borderRadius: '14px' }}
+          >
+            Добавить заметку
+          </button>
         </div>
       </div>
 
-      {/* Contract history */}
+      {/* History table */}
       <div className="card">
-        <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>История договоров</h3>
-        {(driver.contracts ?? []).length === 0 ? (
+        <h3 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>История договоров</h3>
+        {contracts.length === 0 ? (
           <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Нет договоров</p>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--color-neutral-border)' }}>
-                {['Начало', 'Машина', 'Сумма', 'Статус'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '10px 16px 10px 0', fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 500 }}>{h}</th>
+                {['Период', 'Машина', 'Сумма', 'Оплачено', 'Статус'].map(h => (
+                  <th key={h} style={{ textAlign: 'left', padding: '10px 16px 10px 0', fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {[...(driver.contracts ?? [])].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((c: Contract) => (
-                <tr key={c.id} style={{ borderBottom: '1px solid var(--color-neutral-border)' }}>
-                  <td style={{ padding: '12px 16px 12px 0', fontSize: '14px', color: 'var(--color-text-muted)' }}>{formatDate(c.startDate)}</td>
-                  <td style={{ padding: '12px 16px 12px 0' }}>
-                    <Link to={`/cars/${c.carId}`} style={{ fontSize: '14px', color: 'var(--color-accent-text)' }}>{c.car?.plateNumber ?? '—'}</Link>
-                  </td>
-                  <td style={{ padding: '12px 16px 12px 0', fontSize: '14px', color: 'var(--color-text-primary)' }}>{formatMoney(c.totalAmount)}</td>
-                  <td style={{ padding: '12px 0' }}><ContractStatusBadge status={c.status} /></td>
-                </tr>
-              ))}
+              {[...contracts].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((c: Contract) => {
+                const car = (c as any).car
+                return (
+                  <tr key={c.id} style={{ borderBottom: '1px solid var(--color-neutral-border)' }}>
+                    <td style={{ padding: '14px 16px 14px 0', fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                      {formatDate(c.startDate)}{c.endDate ? ` — ${formatDate(c.endDate)}` : ''}
+                    </td>
+                    <td style={{ padding: '14px 16px 14px 0' }}>
+                      {car ? (
+                        <Link to={`/cars/${car.id ?? ''}`} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-accent-text)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>{car.plateNumber}</Link>
+                      ) : '—'}
+                    </td>
+                    <td style={{ padding: '14px 16px 14px 0', fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatMoney(c.totalAmount)}</td>
+                    <td style={{ padding: '14px 16px 14px 0', fontSize: '14px', color: 'var(--color-text-secondary)' }}>{formatMoney(Number(c.paidAmount ?? 0))}</td>
+                    <td style={{ padding: '14px 0' }}><ContractStatusBadge status={c.status} /></td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}
@@ -139,6 +276,15 @@ export function DriverDetailPage() {
         error={deleteError}
         onConfirm={handleDelete}
       />
+      {payModal && activeContract && (
+        <PaymentMarkModal
+          payment={payModal}
+          car={(activeContract as any).car}
+          driver={{ fullName: driver.fullName }}
+          onClose={() => setPayModal(null)}
+          onSuccess={() => { setPayModal(null); refetch() }}
+        />
+      )}
     </div>
   )
 }

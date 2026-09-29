@@ -36,7 +36,7 @@ Handler  →  Service  →  Repository  →  PostgreSQL
 auto-hub/
 ├── cmd/
 │   ├── api/main.go          # точка входа: config → DB → migrations → HTTP
-│   └── seed/main.go         # создать тестового admin
+│   └── seed/main.go         # демо-данные: 12 машин, водители, договоры, штрафы
 ├── internal/
 │   ├── config/              # загрузка env-переменных
 │   ├── domain/              # entity-структуры, enums, sentinel errors
@@ -68,8 +68,8 @@ docker compose up db -d
 # 3. Сервер (миграции применяются автоматически при старте)
 make run
 
-# 4. Создать admin-пользователя
-go run ./cmd/seed/main.go
+# 4. Залить демо-данные (admin + 12 машин + договоры + штрафы + 2 должника)
+make seed
 ```
 
 ## API

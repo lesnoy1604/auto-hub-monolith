@@ -81,7 +81,7 @@ func main() {
 	// Сервисы
 	authSvc := service.NewAuthService(userRepo, cfg.JWTSecret)
 	carSvc := service.NewCarService(carRepo, contractRepo, driverRepo, fineRepo)
-	driverSvc := service.NewDriverService(driverRepo, contractRepo, carRepo)
+	driverSvc := service.NewDriverService(driverRepo, contractRepo, carRepo, paymentRepo)
 	contractSvc := service.NewContractService(contractRepo, paymentRepo, carRepo, driverRepo, pool)
 	paymentSvc := service.NewPaymentService(paymentRepo, contractRepo, carRepo, driverRepo, pool)
 	fineSvc := service.NewFineService(fineRepo, contractRepo, carRepo, driverRepo)

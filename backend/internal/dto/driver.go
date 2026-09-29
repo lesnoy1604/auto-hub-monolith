@@ -56,9 +56,11 @@ type ContractWithCar struct {
 	CreatedAt      time.Time       `json:"createdAt"`
 	UpdatedAt      time.Time       `json:"updatedAt"`
 	Car            CarWithYear     `json:"car"`
+	Payments       []domain.Payment `json:"payments"`
 }
 
 type CarWithYear struct {
+	ID          int    `json:"id"`
 	PlateNumber string `json:"plateNumber"`
 	Brand       string `json:"brand"`
 	Model       string `json:"model"`

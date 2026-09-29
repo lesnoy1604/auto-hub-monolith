@@ -45,6 +45,7 @@ export interface Contract {
   carId: number
   driverId: number
   totalAmount: number
+  paidAmount: number
   monthlyPayment: number
   startDate: string
   endDate: string | null
