@@ -29,6 +29,10 @@ export const contractsApi = createApi({
       query: (id) => `/contracts/${id}/payments`,
       providesTags: ['Payment'],
     }),
+    deleteContract: builder.mutation<void, number>({
+      query: (id) => ({ url: `/contracts/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Contract'],
+    }),
   }),
 })
 
@@ -38,4 +42,5 @@ export const {
   useCreateContractMutation,
   useUpdateContractMutation,
   useGetContractPaymentsQuery,
+  useDeleteContractMutation,
 } = contractsApi

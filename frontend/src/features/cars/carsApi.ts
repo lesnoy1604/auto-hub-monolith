@@ -30,7 +30,11 @@ export const carsApi = createApi({
       query: ({ id, ...body }) => ({ url: `/cars/${id}`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { id }) => ['Car', { type: 'Car', id }],
     }),
+    deleteCar: builder.mutation<void, number>({
+      query: (id) => ({ url: `/cars/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Car'],
+    }),
   }),
 })
 
-export const { useGetCarsQuery, useGetCarByIdQuery, useCreateCarMutation, useUpdateCarMutation } = carsApi
+export const { useGetCarsQuery, useGetCarByIdQuery, useCreateCarMutation, useUpdateCarMutation, useDeleteCarMutation } = carsApi

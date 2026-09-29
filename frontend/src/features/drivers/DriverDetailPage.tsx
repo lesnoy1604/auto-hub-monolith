@@ -1,18 +1,33 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router'
-import { useGetDriverByIdQuery } from './driversApi'
+import { useParams, Link, useNavigate } from 'react-router'
+import { useGetDriverByIdQuery, useDeleteDriverMutation } from './driversApi'
 import { DriverFormModal } from './DriverFormModal'
 import { ContractStatusBadge } from '@/features/contracts/ContractStatusBadge'
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
+import { getApiError } from '@/shared/lib/apiError'
 import type { Contract } from '@/shared/types'
 
 export function DriverDetailPage() {
   const { id } = useParams<{ id: string }>()
   const driverId = Number(id)
+  const navigate = useNavigate()
   const { data: driver, isLoading } = useGetDriverByIdQuery(driverId)
+  const [deleteDriver, { isLoading: deleting }] = useDeleteDriverMutation()
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDelete = async () => {
+    try {
+      await deleteDriver(driverId).unwrap()
+      navigate('/drivers')
+    } catch (err) {
+      setDeleteError(getApiError(err))
+    }
+  }
 
   if (isLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}><Spinner size={36} /></div>
   if (!driver) return <div style={{ color: 'var(--color-text-muted)', padding: 40 }}>Водитель не найден</div>
@@ -29,7 +44,10 @@ export function DriverDetailPage() {
           <h1 style={{ margin: '0 0 4px', fontSize: '34px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{driver.fullName}</h1>
           <p style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-muted)' }}>{driver.phone}</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+          <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -112,6 +130,15 @@ export function DriverDetailPage() {
       </div>
 
       <DriverFormModal open={showEditModal} onClose={() => setShowEditModal(false)} driver={driver} />
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="Удалить водителя"
+        message={`Удалить ${driver.fullName}? Это действие необратимо.`}
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

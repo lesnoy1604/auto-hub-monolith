@@ -1,20 +1,35 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router'
-import { useGetContractByIdQuery } from './contractsApi'
+import { useParams, Link, useNavigate } from 'react-router'
+import { useGetContractByIdQuery, useDeleteContractMutation } from './contractsApi'
 import { ContractStatusBadge } from './ContractStatusBadge'
 import { ContractFormModal } from './ContractFormModal'
 import { PaymentMarkModal } from '@/features/payments/PaymentMarkModal'
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
+import { getApiError } from '@/shared/lib/apiError'
 import type { Payment } from '@/shared/types'
 
 export function ContractDetailPage() {
   const { id } = useParams<{ id: string }>()
   const contractId = Number(id)
+  const navigate = useNavigate()
   const { data: contract, isLoading, refetch } = useGetContractByIdQuery(contractId)
+  const [deleteContract, { isLoading: deleting }] = useDeleteContractMutation()
   const [showEditModal, setShowEditModal] = useState(false)
   const [payModal, setPayModal] = useState<Payment | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDelete = async () => {
+    try {
+      await deleteContract(contractId).unwrap()
+      navigate('/contracts')
+    } catch (err) {
+      setDeleteError(getApiError(err))
+    }
+  }
 
   if (isLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}><Spinner size={36} /></div>
   if (!contract) return <div style={{ color: 'var(--color-text-muted)', padding: 40 }}>Договор не найден</div>
@@ -37,9 +52,14 @@ export function ContractDetailPage() {
           </div>
           <p style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-muted)' }}>{contract.car?.plateNumber} · {contract.driver?.fullName}</p>
         </div>
-        {contract.status === 'ACTIVE' && (
-          <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
-        )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {contract.status === 'ACTIVE' && (
+            <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+          )}
+          {contract.status !== 'ACTIVE' && (
+            <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -129,6 +149,15 @@ export function ContractDetailPage() {
       </div>
 
       <ContractFormModal open={showEditModal} onClose={() => setShowEditModal(false)} contract={contract} />
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="Удалить договор"
+        message={`Удалить договор №${contract.id}? Все платежи по нему также будут удалены.`}
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
       {payModal && (
         <PaymentMarkModal
           payment={payModal}

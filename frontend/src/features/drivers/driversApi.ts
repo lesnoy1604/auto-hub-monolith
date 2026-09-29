@@ -25,7 +25,11 @@ export const driversApi = createApi({
       query: ({ id, ...body }) => ({ url: `/drivers/${id}`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { id }) => ['Driver', { type: 'Driver', id }],
     }),
+    deleteDriver: builder.mutation<void, number>({
+      query: (id) => ({ url: `/drivers/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Driver'],
+    }),
   }),
 })
 
-export const { useGetDriversQuery, useGetDriverByIdQuery, useCreateDriverMutation, useUpdateDriverMutation } = driversApi
+export const { useGetDriversQuery, useGetDriverByIdQuery, useCreateDriverMutation, useUpdateDriverMutation, useDeleteDriverMutation } = driversApi

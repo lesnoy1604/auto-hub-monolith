@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { useGetFinesQuery, useUpdateFineMutation } from './finesApi'
+import { useGetFinesQuery, useUpdateFineMutation, useDeleteFineMutation } from './finesApi'
 import { FineStatusBadge } from './FineStatusBadge'
 import { FineFormModal } from './FineFormModal'
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { FilterChips } from '@/shared/ui/FilterChips'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
+import { getApiError } from '@/shared/lib/apiError'
 import type { Fine } from '@/shared/types'
 
 const FILTERS = [
@@ -23,6 +25,19 @@ export function FinesPage() {
   const { data, isLoading } = useGetFinesQuery(status ? { status } : {})
   const fines = data?.fines ?? []
   const [updateFine] = useUpdateFineMutation()
+  const [deleteFine, { isLoading: deleting }] = useDeleteFineMutation()
+  const [deleteTarget, setDeleteTarget] = useState<Fine | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteFine(deleteTarget.id).unwrap()
+      setDeleteTarget(null)
+    } catch (err) {
+      setDeleteError(getApiError(err))
+    }
+  }
 
   return (
     <div>
@@ -85,6 +100,11 @@ export function FinesPage() {
                           style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid var(--color-neutral-border)', background: 'rgba(186,214,247,0.06)', color: 'var(--color-text-muted)', fontSize: '12px', cursor: 'pointer' }}
                         >↺ Сбросить</button>
                       )}
+                      <button
+                        onClick={() => { setDeleteError(''); setDeleteTarget(f) }}
+                        title="Удалить"
+                        style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(198,40,40,0.3)', background: 'rgba(198,40,40,0.06)', color: '#C62828', fontSize: '12px', cursor: 'pointer' }}
+                      >✕</button>
                     </div>
                   </td>
                 </tr>
@@ -95,6 +115,15 @@ export function FinesPage() {
       )}
 
       <FineFormModal open={showModal} onClose={() => setShowModal(false)} />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Удалить штраф"
+        message={deleteTarget ? `Удалить штраф на ${formatMoney(deleteTarget.amount)} (${deleteTarget.description})?` : ''}
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

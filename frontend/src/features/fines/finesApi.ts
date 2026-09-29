@@ -30,7 +30,11 @@ export const finesApi = createApi({
       query: ({ id, ...body }) => ({ url: `/fines/${id}`, method: 'PUT', body }),
       invalidatesTags: ['Fine'],
     }),
+    deleteFine: builder.mutation<void, number>({
+      query: (id) => ({ url: `/fines/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Fine'],
+    }),
   }),
 })
 
-export const { useGetFinesQuery, useCreateFineMutation, useUpdateFineMutation } = finesApi
+export const { useGetFinesQuery, useCreateFineMutation, useUpdateFineMutation, useDeleteFineMutation } = finesApi

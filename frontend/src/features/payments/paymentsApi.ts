@@ -17,7 +17,11 @@ export const paymentsApi = createApi({
       query: (body) => ({ url: '/payments', method: 'POST', body }),
       invalidatesTags: ['Payment'],
     }),
+    deletePayment: builder.mutation<void, number>({
+      query: (id) => ({ url: `/payments/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Payment'],
+    }),
   }),
 })
 
-export const { useGetPaymentsQuery, useMarkPaymentMutation } = paymentsApi
+export const { useGetPaymentsQuery, useMarkPaymentMutation, useDeletePaymentMutation } = paymentsApi

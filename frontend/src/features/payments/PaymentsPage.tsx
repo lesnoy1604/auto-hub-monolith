@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { useGetPaymentsQuery } from './paymentsApi'
+import { useGetPaymentsQuery, useDeletePaymentMutation } from './paymentsApi'
 import { PaymentMarkModal } from './PaymentMarkModal'
 import { PaymentStatusBadge } from './PaymentStatusBadge'
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { FilterChips } from '@/shared/ui/FilterChips'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
 import { daysOverdue } from '@/shared/lib/daysUntil'
+import { getApiError } from '@/shared/lib/apiError'
 import type { Payment } from '@/shared/types'
 
 const FILTERS = [
@@ -23,6 +25,19 @@ export function PaymentsPage() {
 
   const { data, isLoading, refetch } = useGetPaymentsQuery(status ? { status } : {})
   const payments = data?.payments ?? []
+  const [deletePayment, { isLoading: deleting }] = useDeletePaymentMutation()
+  const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await deletePayment(deleteTarget.id).unwrap()
+      setDeleteTarget(null)
+    } catch (err) {
+      setDeleteError(getApiError(err))
+    }
+  }
 
   const overdueCount = payments.filter(p => p.status === 'OVERDUE').length
   const unpaidCount = payments.filter(p => p.status === 'UNPAID').length
@@ -94,14 +109,23 @@ export function PaymentsPage() {
                     </td>
                     <td style={{ padding: '14px 16px' }}><PaymentStatusBadge status={p.status} /></td>
                     <td style={{ padding: '14px 16px' }}>
-                      {p.status !== 'PAID' && (
-                        <button
-                          onClick={() => setPayModal(p)}
-                          style={{ padding: '6px 14px', borderRadius: '999px', border: 'none', cursor: 'pointer', background: 'var(--color-accent-bg)', color: 'var(--color-accent-text)', fontSize: '13px', fontWeight: 500 }}
-                        >
-                          Оплатить
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {p.status !== 'PAID' && (
+                          <button
+                            onClick={() => setPayModal(p)}
+                            style={{ padding: '6px 14px', borderRadius: '999px', border: 'none', cursor: 'pointer', background: 'var(--color-accent-bg)', color: 'var(--color-accent-text)', fontSize: '13px', fontWeight: 500 }}
+                          >
+                            Оплатить
+                          </button>
+                        )}
+                        {p.status !== 'PAID' && (
+                          <button
+                            onClick={() => { setDeleteError(''); setDeleteTarget(p) }}
+                            title="Удалить платёж"
+                            style={{ padding: '6px 10px', borderRadius: '999px', border: '1px solid rgba(198,40,40,0.3)', background: 'rgba(198,40,40,0.06)', color: '#C62828', fontSize: '13px', cursor: 'pointer' }}
+                          >✕</button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )
@@ -120,6 +144,15 @@ export function PaymentsPage() {
           onSuccess={() => { setPayModal(null); refetch() }}
         />
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Удалить платёж"
+        message={deleteTarget ? `Удалить платёж ${formatMoney(deleteTarget.amount)} (по графику ${formatDate(deleteTarget.dueDate)})?` : ''}
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

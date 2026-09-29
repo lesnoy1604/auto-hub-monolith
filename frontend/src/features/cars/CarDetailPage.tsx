@@ -1,24 +1,39 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router'
-import { useGetCarByIdQuery } from './carsApi'
+import { useParams, Link, useNavigate } from 'react-router'
+import { useGetCarByIdQuery, useDeleteCarMutation } from './carsApi'
 import { useUpdateFineMutation } from '@/features/fines/finesApi'
 import { CarStatusBadge } from './CarStatusBadge'
 import { CarFormModal } from './CarFormModal'
 import { FineFormModal } from '@/features/fines/FineFormModal'
 import { FineStatusBadge } from '@/features/fines/FineStatusBadge'
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Spinner } from '@/shared/ui/Spinner'
 import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
 import { daysUntil, daysColor } from '@/shared/lib/daysUntil'
+import { getApiError } from '@/shared/lib/apiError'
 import type { Payment, Fine } from '@/shared/types'
 
 export function CarDetailPage() {
   const { id } = useParams<{ id: string }>()
   const carId = Number(id)
+  const navigate = useNavigate()
   const { data: car, isLoading, refetch } = useGetCarByIdQuery(carId)
   const [updateFine] = useUpdateFineMutation()
+  const [deleteCar, { isLoading: deleting }] = useDeleteCarMutation()
   const [showEditModal, setShowEditModal] = useState(false)
   const [showFineModal, setShowFineModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDelete = async () => {
+    try {
+      await deleteCar(carId).unwrap()
+      navigate('/cars')
+    } catch (err) {
+      setDeleteError(getApiError(err))
+    }
+  }
 
   if (isLoading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}><Spinner size={36} /></div>
   if (!car) return <div style={{ color: 'var(--color-text-muted)', padding: 40 }}>Машина не найдена</div>
@@ -41,7 +56,10 @@ export function CarDetailPage() {
           </div>
           <p style={{ margin: 0, fontSize: '16px', color: 'var(--color-text-muted)' }}>{car.brand} {car.model} · {car.year} · {car.mileage?.toLocaleString('ru-RU')} км</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+          <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -180,6 +198,15 @@ export function CarDetailPage() {
 
       <CarFormModal open={showEditModal} onClose={() => setShowEditModal(false)} car={car} />
       <FineFormModal open={showFineModal} onClose={() => { setShowFineModal(false); refetch() }} preselectedCarId={car.id} />
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        title="Удалить машину"
+        message={`Удалить ${car.brand} ${car.model} (${car.plateNumber})? Это действие необратимо.`}
+        loading={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }
