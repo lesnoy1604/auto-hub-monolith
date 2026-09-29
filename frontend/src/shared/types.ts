@@ -1,5 +1,6 @@
 export type CarStatus = 'FREE' | 'RENTED' | 'REPAIR' | 'SOLD'
 export type FuelType = 'PETROL' | 'DIESEL' | 'ELECTRIC' | 'HYBRID' | 'GAS'
+export type BodyType = 'SEDAN' | 'HATCHBACK' | 'CROSSOVER' | 'MINIVAN' | 'WAGON' | 'SUV' | 'COUPE' | 'PICKUP' | 'VAN'
 export type ContractStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
 export type DriverStatus = 'ACTIVE' | 'INACTIVE'
 export type PaymentStatus = 'PAID' | 'UNPAID' | 'OVERDUE'
@@ -16,6 +17,7 @@ export interface Car {
   status: CarStatus
   engineVolume: number | null
   fuelType: FuelType | null
+  bodyType: BodyType | null
   osagoBefore: string | null
   inspectionBefore: string | null
   contracts?: Contract[]

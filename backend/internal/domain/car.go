@@ -25,6 +25,20 @@ const (
 	FuelGas      FuelType = "GAS"
 )
 
+type BodyType string
+
+const (
+	BodySedan     BodyType = "SEDAN"
+	BodyHatchback BodyType = "HATCHBACK"
+	BodyCrossover BodyType = "CROSSOVER"
+	BodyMinivan   BodyType = "MINIVAN"
+	BodyWagon     BodyType = "WAGON"
+	BodySUV       BodyType = "SUV"
+	BodyCoupe     BodyType = "COUPE"
+	BodyPickup    BodyType = "PICKUP"
+	BodyVan       BodyType = "VAN"
+)
+
 type Car struct {
 	ID               int              `json:"id"`
 	PlateNumber      string           `json:"plateNumber"`
@@ -36,6 +50,7 @@ type Car struct {
 	Mileage          int              `json:"mileage"`
 	EngineVolume     *decimal.Decimal `json:"engineVolume"`
 	FuelType         *FuelType        `json:"fuelType"`
+	BodyType         *BodyType        `json:"bodyType"`
 	OsagoBefore      *time.Time       `json:"osagoBefore"`
 	InspectionBefore *time.Time       `json:"inspectionBefore"`
 	CreatedAt        time.Time        `json:"createdAt"`

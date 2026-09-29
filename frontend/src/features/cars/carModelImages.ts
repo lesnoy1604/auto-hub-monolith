@@ -1,32 +1,24 @@
-// Маппинг фото моделей автомобилей.
-// Ключ: "<brand>_<model>" в нижнем регистре, пробелы → "_".
-// Значение: путь относительно /public/cars/.
+// Маппинг изображений по типу кузова.
+// Ключ: значение bodyType (uppercase), значение: файл в /public/cars/.
 //
-// Чтобы добавить фото для новой модели:
-//   1. Положи изображение в frontend/public/cars/<файл>
-//   2. Добавь одну строку сюда: 'toyota_camry': 'toyota-camry.png'
+// Чтобы добавить изображение для нового типа кузова:
+//   1. Положи файл в frontend/public/cars/<файл>
+//   2. Добавь строку сюда: 'WAGON': 'wagon.png'
 
-const modelImages: Record<string, string> = {
-  // Примеры (раскомментируй и добавь файл в public/cars/):
-  // 'kia_rio':              'kia-rio.png',
-  // 'hyundai_solaris':      'hyundai-solaris.png',
-  // 'toyota_camry':         'toyota-camry.png',
-  // 'volkswagen_polo':      'volkswagen-polo.png',
-  // 'skoda_octavia':        'skoda-octavia.png',
-  // 'renault_logan':        'renault-logan.png',
-  // 'nissan_almera':        'nissan-almera.png',
-  // 'ford_focus':           'ford-focus.png',
-  // 'lada_vesta':           'lada-vesta.png',
-  // 'mazda_3':              'mazda-3.png',
-  // 'bmw_3_series':         'bmw-3-series.png',
-  // 'chevrolet_cruze':      'chevrolet-cruze.png',
+const bodyTypeImages: Record<string, string> = {
+  SEDAN:     'sedan.png',
+  CROSSOVER: 'crossover.png',
+  MINIVAN:   'minivan.png',
+  HATCHBACK: 'crossover.png',
+  WAGON:     'wagon.png',
+  SUV:       'crossover.png',
+  // COUPE:     'coupe.png',
+  // PICKUP:    'pickup.png',
+  // VAN:       'van.png',
 }
 
-export function getCarModelImage(brand: string, model: string): string | null {
-  const key = `${brand}_${model}`
-    .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '')
-  const filename = modelImages[key]
+export function getCarBodyTypeImage(bodyType: string | null | undefined): string | null {
+  if (!bodyType) return null
+  const filename = bodyTypeImages[bodyType]
   return filename ? `/cars/${filename}` : null
 }

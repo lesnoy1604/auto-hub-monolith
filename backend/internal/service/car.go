@@ -129,6 +129,10 @@ func (s *CarService) Create(ctx context.Context, req *dto.CreateCarRequest) (*do
 		ft := domain.FuelType(*req.FuelType)
 		car.FuelType = &ft
 	}
+	if req.BodyType != nil {
+		bt := domain.BodyType(*req.BodyType)
+		car.BodyType = &bt
+	}
 	return s.carRepo.Create(ctx, car)
 }
 
@@ -156,6 +160,10 @@ func (s *CarService) Update(ctx context.Context, id int, req *dto.UpdateCarReque
 	if req.FuelType != nil {
 		ft := domain.FuelType(*req.FuelType)
 		car.FuelType = &ft
+	}
+	if req.BodyType != nil {
+		bt := domain.BodyType(*req.BodyType)
+		car.BodyType = &bt
 	}
 	return s.carRepo.Update(ctx, id, car)
 }

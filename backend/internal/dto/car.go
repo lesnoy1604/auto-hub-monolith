@@ -17,6 +17,7 @@ type CreateCarRequest struct {
 	Mileage          int        `json:"mileage"           validate:"min=0"`
 	EngineVolume     *float64   `json:"engineVolume"`
 	FuelType         *string    `json:"fuelType"          validate:"omitempty,oneof=PETROL DIESEL ELECTRIC HYBRID GAS"`
+	BodyType         *string    `json:"bodyType"          validate:"omitempty,oneof=SEDAN HATCHBACK CROSSOVER MINIVAN WAGON SUV COUPE PICKUP VAN"`
 	OsagoBefore      *time.Time `json:"osagoBefore"`
 	InspectionBefore *time.Time `json:"inspectionBefore"`
 }
@@ -31,6 +32,7 @@ type UpdateCarRequest struct {
 	Mileage          int        `json:"mileage"           validate:"min=0"`
 	EngineVolume     *float64   `json:"engineVolume"`
 	FuelType         *string    `json:"fuelType"          validate:"omitempty,oneof=PETROL DIESEL ELECTRIC HYBRID GAS"`
+	BodyType         *string    `json:"bodyType"          validate:"omitempty,oneof=SEDAN HATCHBACK CROSSOVER MINIVAN WAGON SUV COUPE PICKUP VAN"`
 	OsagoBefore      *time.Time `json:"osagoBefore"`
 	InspectionBefore *time.Time `json:"inspectionBefore"`
 }

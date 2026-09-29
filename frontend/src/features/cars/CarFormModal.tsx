@@ -17,6 +17,7 @@ const schema = z.object({
   mileage: z.coerce.number().min(0).optional(),
   engineVolume: z.coerce.number().min(0.1).max(10).optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
   fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID', 'GAS', '']).optional(),
+  bodyType: z.enum(['SEDAN', 'HATCHBACK', 'CROSSOVER', 'MINIVAN', 'WAGON', 'SUV', 'COUPE', 'PICKUP', 'VAN', '']).optional(),
   status: z.enum(['FREE', 'RENTED', 'REPAIR', 'SOLD']),
   osagoBefore: z.string().optional(),
   inspectionBefore: z.string().optional(),
@@ -49,10 +50,11 @@ export function CarFormModal({ open, onClose, car }: Props) {
       mileage: car.mileage,
       engineVolume: car.engineVolume ?? undefined,
       fuelType: car.fuelType ?? '',
+      bodyType: car.bodyType ?? '',
       status: car.status,
       osagoBefore: toDateInput(car.osagoBefore),
       inspectionBefore: toDateInput(car.inspectionBefore),
-    } : { status: 'FREE', fuelType: '' },
+    } : { status: 'FREE', fuelType: '', bodyType: '' },
   })
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export function CarFormModal({ open, onClose, car }: Props) {
         year: car.year, mileage: car.mileage, status: car.status,
         engineVolume: car.engineVolume ?? undefined,
         fuelType: car.fuelType ?? '',
+        bodyType: car.bodyType ?? '',
         osagoBefore: toDateInput(car.osagoBefore), inspectionBefore: toDateInput(car.inspectionBefore),
       } : { status: 'FREE', fuelType: '' })
     }
@@ -71,6 +74,7 @@ export function CarFormModal({ open, onClose, car }: Props) {
     const payload = {
       ...data,
       fuelType: data.fuelType || undefined,
+      bodyType: data.bodyType || undefined,
       osagoBefore: data.osagoBefore ? toRFC3339(data.osagoBefore) : undefined,
       inspectionBefore: data.inspectionBefore ? toRFC3339(data.inspectionBefore) : undefined,
     }
@@ -101,6 +105,18 @@ export function CarFormModal({ open, onClose, car }: Props) {
             <option value="HYBRID">Гибрид</option>
             <option value="GAS">Газ</option>
           </Select>
+          <div style={{ gridColumn: '1 / -1' }}><Select label="Тип кузова" {...register('bodyType')} error={errors.bodyType?.message}>
+            <option value="">— не указано —</option>
+            <option value="SEDAN">Седан</option>
+            <option value="HATCHBACK">Хэтчбек</option>
+            <option value="CROSSOVER">Кроссовер</option>
+            <option value="MINIVAN">Минивэн</option>
+            <option value="WAGON">Универсал</option>
+            <option value="SUV">Внедорожник</option>
+            <option value="COUPE">Купе</option>
+            <option value="PICKUP">Пикап</option>
+            <option value="VAN">Фургон</option>
+          </Select></div>
         </div>
         <Select label="Статус" {...register('status')} error={errors.status?.message}>
           <option value="FREE">Свободна</option>

@@ -163,6 +163,16 @@
     color: var(--color-danger);
   }
 
+  .link-accent {
+    color: var(--color-accent-text);
+    text-decoration: none;
+    transition: color 0.15s, opacity 0.15s;
+  }
+  .link-accent:hover {
+    color: var(--color-frost-glow);
+    opacity: 0.85;
+  }
+
   .card {
     background-color: var(--color-neutral-surface);
     border-radius: var(--radius-lg);
