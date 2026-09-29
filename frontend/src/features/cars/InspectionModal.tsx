@@ -106,7 +106,7 @@ export function InspectionModal({ carId, onClose, onSuccess }: Props) {
                   }}
                 >
                   {preview ? (
-                    <img src={preview} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={preview} alt={label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <div style={{ textAlign: 'center' }}>
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(186,214,247,0.3)" strokeWidth="1.5">

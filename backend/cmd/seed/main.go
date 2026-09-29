@@ -64,21 +64,23 @@ func main() {
 		year                     int
 		status                   domain.CarStatus
 		mileage                  int
+		engineVolume             float64
+		fuelType                 domain.FuelType
 	}
 
 	carSeeds := []carSeed{
-		{"А123ВС77", "XTA210930Y2345671", "Kia", "Rio", 2020, domain.CarStatusRented, 87400},
-		{"В456ДЕ77", "Z94C251BAEM123456", "Hyundai", "Solaris", 2021, domain.CarStatusRented, 64200},
-		{"С789ЕФ77", "JTDBF32K900123456", "Toyota", "Camry", 2022, domain.CarStatusRented, 41800},
-		{"Д012ГИ77", "WVWZZZ9NZ8Y123456", "Volkswagen", "Polo", 2020, domain.CarStatusRented, 102300},
-		{"Е345ИЙ77", "TMBEG21Z012345678", "Skoda", "Octavia", 2021, domain.CarStatusRented, 58700},
-		{"Ж678КЛ77", "VF1LSNL0H12345678", "Renault", "Logan", 2019, domain.CarStatusRented, 134900},
-		{"З901МН77", "JN1TCNT30U0123456", "Nissan", "Almera", 2020, domain.CarStatusRented, 79600},
-		{"И234ОП77", "WF0TXXGCDT1234567", "Ford", "Focus", 2021, domain.CarStatusRented, 53100},
-		{"К567РС77", "XTA21230012345678", "Lada", "Vesta", 2022, domain.CarStatusRented, 31200},
-		{"Л890ТУ77", "JMZBL12Z001234567", "Mazda", "3", 2020, domain.CarStatusRented, 91500},
-		{"М123УФ77", "WBAFR91090L123456", "BMW", "3 Series", 2019, domain.CarStatusRepair, 167800},
-		{"Н456ФХ77", "1GCEK19T31E123456", "Chevrolet", "Cruze", 2021, domain.CarStatusFree, 22000},
+		{"А123ВС77", "XTA210930Y2345671", "Kia", "Rio", 2020, domain.CarStatusRented, 87400, 1.6, domain.FuelPetrol},
+		{"В456ДЕ77", "Z94C251BAEM123456", "Hyundai", "Solaris", 2021, domain.CarStatusRented, 64200, 1.6, domain.FuelPetrol},
+		{"С789ЕФ77", "JTDBF32K900123456", "Toyota", "Camry", 2022, domain.CarStatusRented, 41800, 2.5, domain.FuelPetrol},
+		{"Д012ГИ77", "WVWZZZ9NZ8Y123456", "Volkswagen", "Polo", 2020, domain.CarStatusRented, 102300, 1.6, domain.FuelPetrol},
+		{"Е345ИЙ77", "TMBEG21Z012345678", "Skoda", "Octavia", 2021, domain.CarStatusRented, 58700, 2.0, domain.FuelDiesel},
+		{"Ж678КЛ77", "VF1LSNL0H12345678", "Renault", "Logan", 2019, domain.CarStatusRented, 134900, 1.6, domain.FuelPetrol},
+		{"З901МН77", "JN1TCNT30U0123456", "Nissan", "Almera", 2020, domain.CarStatusRented, 79600, 1.6, domain.FuelPetrol},
+		{"И234ОП77", "WF0TXXGCDT1234567", "Ford", "Focus", 2021, domain.CarStatusRented, 53100, 1.5, domain.FuelPetrol},
+		{"К567РС77", "XTA21230012345678", "Lada", "Vesta", 2022, domain.CarStatusRented, 31200, 1.8, domain.FuelPetrol},
+		{"Л890ТУ77", "JMZBL12Z001234567", "Mazda", "3", 2020, domain.CarStatusRented, 91500, 2.0, domain.FuelPetrol},
+		{"М123УФ77", "WBAFR91090L123456", "BMW", "3 Series", 2019, domain.CarStatusRepair, 167800, 2.0, domain.FuelDiesel},
+		{"Н456ФХ77", "1GCEK19T31E123456", "Chevrolet", "Cruze", 2021, domain.CarStatusFree, 22000, 1.4, domain.FuelPetrol},
 	}
 
 	osago := func(y, m, d int) *time.Time {
@@ -90,6 +92,8 @@ func main() {
 	for i, s := range carSeeds {
 		obl := osago(2027, (i%12)+1, 15)
 		ins := osago(2027, ((i+3)%12)+1, 20)
+		ev := decimal.NewFromFloat(s.engineVolume)
+		ft := s.fuelType
 		car, err := carRepo.Create(ctx, &domain.Car{
 			PlateNumber:      s.plate,
 			VIN:              s.vin,
@@ -98,6 +102,8 @@ func main() {
 			Year:             s.year,
 			Status:           s.status,
 			Mileage:          s.mileage,
+			EngineVolume:     &ev,
+			FuelType:         &ft,
 			OsagoBefore:      obl,
 			InspectionBefore: ins,
 		})

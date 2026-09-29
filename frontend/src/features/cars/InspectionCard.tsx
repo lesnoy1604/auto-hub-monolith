@@ -77,7 +77,7 @@ export function InspectionCard({ carId }: Props) {
                   }}
                 >
                   {url ? (
-                    <img src={url} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={url} alt={label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(186,214,247,0.2)" strokeWidth="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/>

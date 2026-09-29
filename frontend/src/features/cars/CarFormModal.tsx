@@ -15,6 +15,8 @@ const schema = z.object({
   model: z.string().min(1, 'Обязательное поле'),
   year: z.coerce.number().int().min(2000, 'Мин. 2000').max(2030, 'Макс. 2030'),
   mileage: z.coerce.number().min(0).optional(),
+  engineVolume: z.coerce.number().min(0.1).max(10).optional().or(z.literal('')).transform(v => v === '' ? undefined : v),
+  fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID', 'GAS', '']).optional(),
   status: z.enum(['FREE', 'RENTED', 'REPAIR', 'SOLD']),
   osagoBefore: z.string().optional(),
   inspectionBefore: z.string().optional(),
@@ -45,10 +47,12 @@ export function CarFormModal({ open, onClose, car }: Props) {
       model: car.model,
       year: car.year,
       mileage: car.mileage,
+      engineVolume: car.engineVolume ?? undefined,
+      fuelType: car.fuelType ?? '',
       status: car.status,
       osagoBefore: toDateInput(car.osagoBefore),
       inspectionBefore: toDateInput(car.inspectionBefore),
-    } : { status: 'FREE' },
+    } : { status: 'FREE', fuelType: '' },
   })
 
   useEffect(() => {
@@ -56,14 +60,17 @@ export function CarFormModal({ open, onClose, car }: Props) {
       reset(car ? {
         plateNumber: car.plateNumber, vin: car.vin, brand: car.brand, model: car.model,
         year: car.year, mileage: car.mileage, status: car.status,
+        engineVolume: car.engineVolume ?? undefined,
+        fuelType: car.fuelType ?? '',
         osagoBefore: toDateInput(car.osagoBefore), inspectionBefore: toDateInput(car.inspectionBefore),
-      } : { status: 'FREE' })
+      } : { status: 'FREE', fuelType: '' })
     }
   }, [open, car, reset])
 
   const onSubmit = async (data: FormData) => {
     const payload = {
       ...data,
+      fuelType: data.fuelType || undefined,
       osagoBefore: data.osagoBefore ? toRFC3339(data.osagoBefore) : undefined,
       inspectionBefore: data.inspectionBefore ? toRFC3339(data.inspectionBefore) : undefined,
     }
@@ -85,6 +92,15 @@ export function CarFormModal({ open, onClose, car }: Props) {
           <Input label="Модель" {...register('model')} error={errors.model?.message} />
           <Input label="Год" type="number" {...register('year')} error={errors.year?.message} />
           <Input label="Пробег км" type="number" {...register('mileage')} error={errors.mileage?.message} />
+          <Input label="Объём двигателя (л)" type="number" step="0.1" {...register('engineVolume')} error={errors.engineVolume?.message} />
+          <Select label="Тип топлива" {...register('fuelType')} error={errors.fuelType?.message}>
+            <option value="">— не указано —</option>
+            <option value="PETROL">Бензин</option>
+            <option value="DIESEL">Дизель</option>
+            <option value="ELECTRIC">Электро</option>
+            <option value="HYBRID">Гибрид</option>
+            <option value="GAS">Газ</option>
+          </Select>
         </div>
         <Select label="Статус" {...register('status')} error={errors.status?.message}>
           <option value="FREE">Свободна</option>

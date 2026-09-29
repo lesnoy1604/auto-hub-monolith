@@ -17,13 +17,14 @@ func NewCarRepository(db *pgxpool.Pool) *carRepo {
 	return &carRepo{db: db}
 }
 
-const carColumns = `id, plate_number, vin, brand, model, year, status, mileage, osago_before, inspection_before, created_at, updated_at`
+const carColumns = `id, plate_number, vin, brand, model, year, status, mileage, engine_volume, fuel_type, osago_before, inspection_before, created_at, updated_at`
 
 func scanCar(row pgx.Row) (*domain.Car, error) {
 	c := &domain.Car{}
 	err := row.Scan(
 		&c.ID, &c.PlateNumber, &c.VIN, &c.Brand, &c.Model, &c.Year,
-		&c.Status, &c.Mileage, &c.OsagoBefore, &c.InspectionBefore,
+		&c.Status, &c.Mileage, &c.EngineVolume, &c.FuelType,
+		&c.OsagoBefore, &c.InspectionBefore,
 		&c.CreatedAt, &c.UpdatedAt,
 	)
 	if err != nil {
@@ -53,7 +54,8 @@ func (r *carRepo) List(ctx context.Context, status *domain.CarStatus, search *st
 		c := domain.Car{}
 		if err := rows.Scan(
 			&c.ID, &c.PlateNumber, &c.VIN, &c.Brand, &c.Model, &c.Year,
-			&c.Status, &c.Mileage, &c.OsagoBefore, &c.InspectionBefore,
+			&c.Status, &c.Mileage, &c.EngineVolume, &c.FuelType,
+			&c.OsagoBefore, &c.InspectionBefore,
 			&c.CreatedAt, &c.UpdatedAt,
 		); err != nil {
 			return nil, err
@@ -72,11 +74,12 @@ func (r *carRepo) GetByID(ctx context.Context, id int) (*domain.Car, error) {
 
 func (r *carRepo) Create(ctx context.Context, car *domain.Car) (*domain.Car, error) {
 	row := r.db.QueryRow(ctx,
-		`INSERT INTO cars (plate_number, vin, brand, model, year, status, mileage, osago_before, inspection_before)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		`INSERT INTO cars (plate_number, vin, brand, model, year, status, mileage, engine_volume, fuel_type, osago_before, inspection_before)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		 RETURNING `+carColumns,
 		car.PlateNumber, car.VIN, car.Brand, car.Model, car.Year,
-		car.Status, car.Mileage, car.OsagoBefore, car.InspectionBefore,
+		car.Status, car.Mileage, car.EngineVolume, car.FuelType,
+		car.OsagoBefore, car.InspectionBefore,
 	)
 	return scanCar(row)
 }
@@ -84,10 +87,12 @@ func (r *carRepo) Create(ctx context.Context, car *domain.Car) (*domain.Car, err
 func (r *carRepo) Update(ctx context.Context, id int, car *domain.Car) (*domain.Car, error) {
 	row := r.db.QueryRow(ctx,
 		`UPDATE cars SET plate_number=$1, vin=$2, brand=$3, model=$4, year=$5,
-		 status=$6, mileage=$7, osago_before=$8, inspection_before=$9
-		 WHERE id=$10 RETURNING `+carColumns,
+		 status=$6, mileage=$7, engine_volume=$8, fuel_type=$9,
+		 osago_before=$10, inspection_before=$11
+		 WHERE id=$12 RETURNING `+carColumns,
 		car.PlateNumber, car.VIN, car.Brand, car.Model, car.Year,
-		car.Status, car.Mileage, car.OsagoBefore, car.InspectionBefore, id,
+		car.Status, car.Mileage, car.EngineVolume, car.FuelType,
+		car.OsagoBefore, car.InspectionBefore, id,
 	)
 	return scanCar(row)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/dutik/auto-hub/internal/domain"
 	"github.com/dutik/auto-hub/internal/dto"
 	"github.com/dutik/auto-hub/internal/repository"
+	"github.com/shopspring/decimal"
 )
 
 type CarService struct {
@@ -120,6 +121,14 @@ func (s *CarService) Create(ctx context.Context, req *dto.CreateCarRequest) (*do
 		OsagoBefore:      req.OsagoBefore,
 		InspectionBefore: req.InspectionBefore,
 	}
+	if req.EngineVolume != nil {
+		v := decimal.NewFromFloat(*req.EngineVolume)
+		car.EngineVolume = &v
+	}
+	if req.FuelType != nil {
+		ft := domain.FuelType(*req.FuelType)
+		car.FuelType = &ft
+	}
 	return s.carRepo.Create(ctx, car)
 }
 
@@ -139,6 +148,14 @@ func (s *CarService) Update(ctx context.Context, id int, req *dto.UpdateCarReque
 		Mileage:          req.Mileage,
 		OsagoBefore:      req.OsagoBefore,
 		InspectionBefore: req.InspectionBefore,
+	}
+	if req.EngineVolume != nil {
+		v := decimal.NewFromFloat(*req.EngineVolume)
+		car.EngineVolume = &v
+	}
+	if req.FuelType != nil {
+		ft := domain.FuelType(*req.FuelType)
+		car.FuelType = &ft
 	}
 	return s.carRepo.Update(ctx, id, car)
 }

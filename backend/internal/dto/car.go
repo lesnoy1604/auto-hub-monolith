@@ -15,6 +15,8 @@ type CreateCarRequest struct {
 	Year             int        `json:"year"              validate:"required,min=1900,max=2100"`
 	Status           string     `json:"status"            validate:"required,oneof=FREE RENTED REPAIR SOLD"`
 	Mileage          int        `json:"mileage"           validate:"min=0"`
+	EngineVolume     *float64   `json:"engineVolume"`
+	FuelType         *string    `json:"fuelType"          validate:"omitempty,oneof=PETROL DIESEL ELECTRIC HYBRID GAS"`
 	OsagoBefore      *time.Time `json:"osagoBefore"`
 	InspectionBefore *time.Time `json:"inspectionBefore"`
 }
@@ -27,6 +29,8 @@ type UpdateCarRequest struct {
 	Year             int        `json:"year"              validate:"required,min=1900,max=2100"`
 	Status           string     `json:"status"            validate:"required,oneof=FREE RENTED REPAIR SOLD"`
 	Mileage          int        `json:"mileage"           validate:"min=0"`
+	EngineVolume     *float64   `json:"engineVolume"`
+	FuelType         *string    `json:"fuelType"          validate:"omitempty,oneof=PETROL DIESEL ELECTRIC HYBRID GAS"`
 	OsagoBefore      *time.Time `json:"osagoBefore"`
 	InspectionBefore *time.Time `json:"inspectionBefore"`
 }

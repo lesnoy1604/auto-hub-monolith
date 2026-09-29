@@ -14,7 +14,12 @@ import { formatDate } from '@/shared/lib/formatDate'
 import { formatMoney } from '@/shared/lib/formatMoney'
 import { daysUntil, daysColor } from '@/shared/lib/daysUntil'
 import { getApiError } from '@/shared/lib/apiError'
+import { getCarModelImage } from './carModelImages'
 import type { Payment, Fine } from '@/shared/types'
+
+const FUEL_LABELS: Record<string, string> = {
+  PETROL: 'Бензин', DIESEL: 'Дизель', ELECTRIC: 'Электро', HYBRID: 'Гибрид', GAS: 'Газ',
+}
 
 export function CarDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -55,27 +60,77 @@ export function CarDetailPage() {
 
       {/* Hero card */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Photo area */}
-        <div style={{ height: 220, background: 'rgba(186,214,247,0.03)', borderBottom: '1px solid var(--color-neutral-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(107,63,228,0.35)" strokeWidth="1">
-            <rect x="2" y="7" width="20" height="10" rx="3"/>
-            <path d="M6 7l2-4h8l2 4"/>
-            <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
-          </svg>
-          <span style={{ fontSize: 12, color: 'rgba(186,214,247,0.25)', fontFamily: 'var(--font-mono)' }}>Главное фото автомобиля</span>
-        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr auto', minHeight: 120 }}>
 
-        {/* Info bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px' }}>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}>{car.plateNumber}</h1>
-          <CarStatusBadge status={car.status} />
-          <span style={{ fontSize: 15, color: 'var(--color-text-muted)' }}>{car.brand} {car.model} · {car.year} · {car.mileage?.toLocaleString('ru-RU')} км</span>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-            {car.status === 'FREE' && (
-              <button className="btn btn-primary" onClick={() => setShowContractModal(true)}>Оформить договор</button>
-            )}
-            <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
-            <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
+          {/* Left — plate + status + subtitle */}
+          <div style={{ padding: '24px 24px 24px 28px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--color-neutral-border)' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 6, fontWeight: 500 }}>{car.brand}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', letterSpacing: '-0.01em' }}>{car.plateNumber}</h1>
+              <CarStatusBadge status={car.status} />
+            </div>
+            <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{car.brand} {car.model} · {car.year} · {car.mileage?.toLocaleString('ru-RU')} км</span>
+          </div>
+
+          {/* Center — car image or SVG schema */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(107,63,228,0.04) 0%, transparent 60%)' }}>
+            <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(107,63,228,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(107,63,228,0.03) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+            {(() => {
+              const imgSrc = getCarModelImage(car.brand, car.model)
+              return imgSrc ? (
+                <img src={imgSrc} alt={`${car.brand} ${car.model}`} style={{ height: 110, objectFit: 'contain', position: 'relative', zIndex: 1, filter: 'drop-shadow(0 8px 24px rgba(107,63,228,0.2))' }} />
+              ) : (
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', width: 340, height: 12, background: 'rgba(107,63,228,0.08)', borderRadius: '50%', filter: 'blur(6px)' }} />
+                  <svg width="340" height="90" viewBox="0 0 520 140" fill="none">
+                    <path d="M60 95 L60 72 Q62 58 80 50 L150 32 Q170 24 210 22 L300 22 Q340 22 370 30 L420 50 Q445 58 452 72 L460 95 Z" fill="rgba(107,63,228,0.1)" stroke="rgba(107,63,228,0.45)" strokeWidth="1.5" strokeLinejoin="round"/>
+                    <path d="M150 32 Q170 24 210 22 L300 22 Q340 22 370 30 L420 50 L80 50 Z" fill="rgba(107,63,228,0.06)" stroke="rgba(107,63,228,0.25)" strokeWidth="1" strokeLinejoin="round"/>
+                    <path d="M160 50 L185 26 Q200 22 230 22 L230 50 Z" fill="rgba(186,214,247,0.06)" stroke="rgba(186,214,247,0.18)" strokeWidth="1" strokeLinejoin="round"/>
+                    <path d="M310 50 L310 22 Q340 22 368 30 L405 50 Z" fill="rgba(186,214,247,0.06)" stroke="rgba(186,214,247,0.18)" strokeWidth="1" strokeLinejoin="round"/>
+                    <path d="M234 22 L308 22 L308 50 L234 50 Z" fill="rgba(186,214,247,0.07)" stroke="rgba(186,214,247,0.18)" strokeWidth="1"/>
+                    <line x1="270" y1="50" x2="268" y2="95" stroke="rgba(107,63,228,0.2)" strokeWidth="1"/>
+                    <rect x="60" y="88" width="400" height="7" rx="2" fill="rgba(107,63,228,0.15)"/>
+                    <path d="M60 72 L48 80 Q44 88 46 95 L60 95 Z" fill="rgba(107,63,228,0.12)" stroke="rgba(107,63,228,0.35)" strokeWidth="1.2"/>
+                    <path d="M460 72 L472 80 Q476 88 474 95 L460 95 Z" fill="rgba(107,63,228,0.12)" stroke="rgba(107,63,228,0.35)" strokeWidth="1.2"/>
+                    <ellipse cx="52" cy="68" rx="6" ry="4" fill="rgba(251,191,36,0.45)" stroke="rgba(251,191,36,0.6)" strokeWidth="1"/>
+                    <ellipse cx="468" cy="68" rx="6" ry="4" fill="rgba(239,68,68,0.35)" stroke="rgba(239,68,68,0.55)" strokeWidth="1"/>
+                    <circle cx="140" cy="97" r="22" fill="rgba(12,12,20,0.9)" stroke="rgba(107,63,228,0.45)" strokeWidth="1.5"/>
+                    <circle cx="140" cy="97" r="13" fill="rgba(107,63,228,0.12)" stroke="rgba(107,63,228,0.35)" strokeWidth="1"/>
+                    <circle cx="140" cy="97" r="4" fill="rgba(107,63,228,0.55)"/>
+                    <circle cx="378" cy="97" r="22" fill="rgba(12,12,20,0.9)" stroke="rgba(107,63,228,0.45)" strokeWidth="1.5"/>
+                    <circle cx="378" cy="97" r="13" fill="rgba(107,63,228,0.12)" stroke="rgba(107,63,228,0.35)" strokeWidth="1"/>
+                    <circle cx="378" cy="97" r="4" fill="rgba(107,63,228,0.55)"/>
+                  </svg>
+                </div>
+              )
+            })()}
+          </div>
+
+          {/* Right — stats + buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px 24px', borderLeft: '1px solid var(--color-neutral-border)', minWidth: 340 }}>
+            {/* Stats row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {[
+                { icon: '⊙', label: 'Пробег', value: `${car.mileage?.toLocaleString('ru-RU')} км` },
+                { icon: '◷', label: 'Год', value: String(car.year) },
+                { icon: '⚙', label: 'Двигатель', value: car.engineVolume ? `${car.engineVolume} л` : '—' },
+                { icon: '⛽', label: 'Топливо', value: car.fuelType ? FUEL_LABELS[car.fuelType] : '—' },
+              ].map(({ icon, label, value }) => (
+                <div key={label} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(186,214,247,0.04)', border: '1px solid var(--color-neutral-border)' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: 18, lineHeight: 1 }}>{icon}</p>
+                  <p style={{ margin: '0 0 2px', fontSize: 11, color: 'var(--color-text-muted)' }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{value}</p>
+                </div>
+              ))}
+            </div>
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
+              {car.status === 'FREE' && (
+                <button className="btn btn-primary" onClick={() => setShowContractModal(true)}>Оформить договор</button>
+              )}
+              <button className="btn btn-secondary" onClick={() => setShowEditModal(true)}>Редактировать</button>
+              <button className="btn btn-danger" onClick={() => { setDeleteError(''); setShowDeleteDialog(true) }}>Удалить</button>
+            </div>
           </div>
         </div>
       </div>
