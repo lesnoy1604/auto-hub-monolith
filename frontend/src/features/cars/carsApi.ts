@@ -4,12 +4,14 @@ import type { Car } from '@/shared/types'
 
 interface CarsQueryParams { status?: string; search?: string }
 
+interface CarsListResponse { cars: Car[]; total: number }
+
 export const carsApi = createApi({
   reducerPath: 'carsApi',
   baseQuery: baseQueryWithAuth,
   tagTypes: ['Car'],
   endpoints: (builder) => ({
-    getCars: builder.query<Car[], CarsQueryParams>({
+    getCars: builder.query<CarsListResponse, CarsQueryParams>({
       query: (params) => ({
         url: '/cars',
         params,

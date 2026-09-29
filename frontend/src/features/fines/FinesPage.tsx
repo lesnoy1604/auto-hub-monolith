@@ -20,7 +20,8 @@ const FILTERS = [
 export function FinesPage() {
   const [status, setStatus] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const { data: fines = [], isLoading } = useGetFinesQuery(status ? { status } : {})
+  const { data, isLoading } = useGetFinesQuery(status ? { status } : {})
+  const fines = data?.fines ?? []
   const [updateFine] = useUpdateFineMutation()
 
   return (

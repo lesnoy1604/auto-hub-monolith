@@ -26,8 +26,10 @@ interface Props {
 
 export function FineFormModal({ open, onClose, preselectedCarId }: Props) {
   const [createFine, { isLoading, error }] = useCreateFineMutation()
-  const { data: cars = [] } = useGetCarsQuery({})
-  const { data: drivers = [] } = useGetDriversQuery({})
+  const { data: carsData } = useGetCarsQuery({})
+  const cars = carsData?.cars ?? []
+  const { data: driversData } = useGetDriversQuery({})
+  const drivers = driversData?.drivers ?? []
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),

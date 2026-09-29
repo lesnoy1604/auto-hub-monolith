@@ -2,12 +2,14 @@ import { createApi } from '@reduxjs/toolkit/query/react'
 import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Driver } from '@/shared/types'
 
+interface DriversListResponse { drivers: Driver[]; total: number }
+
 export const driversApi = createApi({
   reducerPath: 'driversApi',
   baseQuery: baseQueryWithAuth,
   tagTypes: ['Driver'],
   endpoints: (builder) => ({
-    getDrivers: builder.query<Driver[], { status?: string; search?: string }>({
+    getDrivers: builder.query<DriversListResponse, { status?: string; search?: string }>({
       query: (params) => ({ url: '/drivers', params }),
       providesTags: ['Driver'],
     }),

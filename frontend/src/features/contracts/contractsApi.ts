@@ -2,12 +2,14 @@ import { createApi } from '@reduxjs/toolkit/query/react'
 import { baseQueryWithAuth } from '@/app/baseQuery'
 import type { Contract, Payment } from '@/shared/types'
 
+interface ContractsListResponse { contracts: Contract[]; total: number }
+
 export const contractsApi = createApi({
   reducerPath: 'contractsApi',
   baseQuery: baseQueryWithAuth,
   tagTypes: ['Contract', 'Payment'],
   endpoints: (builder) => ({
-    getContracts: builder.query<Contract[], { status?: string }>({
+    getContracts: builder.query<ContractsListResponse, { status?: string }>({
       query: (params) => ({ url: '/contracts', params }),
       providesTags: ['Contract'],
     }),

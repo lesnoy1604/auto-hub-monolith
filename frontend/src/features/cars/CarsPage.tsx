@@ -30,10 +30,11 @@ export function CarsPage() {
     return () => clearTimeout(t)
   }, [search])
 
-  const { data: cars = [], isLoading } = useGetCarsQuery({
+  const { data, isLoading } = useGetCarsQuery({
     ...(status ? { status } : {}),
     ...(debouncedSearch ? { search: debouncedSearch } : {}),
   })
+  const cars = data?.cars ?? []
 
   return (
     <div>

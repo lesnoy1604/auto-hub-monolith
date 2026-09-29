@@ -11,12 +11,14 @@ interface CreateFineDto {
   fineDate: string
 }
 
+interface FinesListResponse { fines: Fine[]; total: number }
+
 export const finesApi = createApi({
   reducerPath: 'finesApi',
   baseQuery: baseQueryWithAuth,
   tagTypes: ['Fine'],
   endpoints: (builder) => ({
-    getFines: builder.query<Fine[], { status?: string }>({
+    getFines: builder.query<FinesListResponse, { status?: string }>({
       query: (params) => ({ url: '/fines', params }),
       providesTags: ['Fine'],
     }),

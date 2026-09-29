@@ -21,7 +21,8 @@ export function PaymentsPage() {
   const [sortBy, setSortBy] = useState<'days' | 'amount'>('days')
   const [payModal, setPayModal] = useState<Payment | null>(null)
 
-  const { data: payments = [], isLoading, refetch } = useGetPaymentsQuery(status ? { status } : {})
+  const { data, isLoading, refetch } = useGetPaymentsQuery(status ? { status } : {})
+  const payments = data?.payments ?? []
 
   const overdueCount = payments.filter(p => p.status === 'OVERDUE').length
   const unpaidCount = payments.filter(p => p.status === 'UNPAID').length

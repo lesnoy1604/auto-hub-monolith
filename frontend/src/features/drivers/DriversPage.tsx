@@ -26,10 +26,11 @@ export function DriversPage() {
     return () => clearTimeout(t)
   }, [search])
 
-  const { data: drivers = [], isLoading } = useGetDriversQuery({
+  const { data, isLoading } = useGetDriversQuery({
     ...(status ? { status } : {}),
     ...(debouncedSearch ? { search: debouncedSearch } : {}),
   })
+  const drivers = data?.drivers ?? []
 
   return (
     <div>

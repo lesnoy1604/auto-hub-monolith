@@ -21,7 +21,8 @@ export function ContractsPage() {
   const navigate = useNavigate()
   const [status, setStatus] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const { data: contracts = [], isLoading } = useGetContractsQuery(status ? { status } : {})
+  const { data, isLoading } = useGetContractsQuery(status ? { status } : {})
+  const contracts = data?.contracts ?? []
 
   return (
     <div>

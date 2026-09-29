@@ -37,8 +37,10 @@ export function ContractFormModal({ open, onClose, contract }: Props) {
   const isEdit = !!contract
   const [createContract, { isLoading: creating, error: createError }] = useCreateContractMutation()
   const [updateContract, { isLoading: updating, error: updateError }] = useUpdateContractMutation()
-  const { data: freeCars = [] } = useGetCarsQuery({ status: 'FREE' }, { skip: isEdit })
-  const { data: activeDrivers = [] } = useGetDriversQuery({ status: 'ACTIVE' }, { skip: isEdit })
+  const { data: freeCarsData } = useGetCarsQuery({ status: 'FREE' }, { skip: isEdit })
+  const freeCars = freeCarsData?.cars ?? []
+  const { data: activeDriversData } = useGetDriversQuery({ status: 'ACTIVE' }, { skip: isEdit })
+  const activeDrivers = activeDriversData?.drivers ?? []
 
   const isLoading = creating || updating
   const apiError = createError || updateError
