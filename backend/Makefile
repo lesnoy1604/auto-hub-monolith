@@ -30,6 +30,9 @@ migrate-up:
 migrate-down:
 	goose -dir migrations postgres "$(DATABASE_URL)" down
 
+seed:
+	go run ./cmd/seed/main.go
+
 # Деплой: make deploy SERVER=user@1.2.3.4
 deploy:
 	bash scripts/deploy.sh $(SERVER)
