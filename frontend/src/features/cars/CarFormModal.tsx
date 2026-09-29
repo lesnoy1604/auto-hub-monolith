@@ -33,6 +33,9 @@ export function CarFormModal({ open, onClose, car }: Props) {
   const isLoading = creating || updating
   const apiError = createError || updateError
 
+  const toDateInput = (d?: string | null) => d ? d.slice(0, 10) : ''
+  const toRFC3339 = (d?: string) => d ? `${d}T00:00:00Z` : undefined
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: car ? {
@@ -43,8 +46,8 @@ export function CarFormModal({ open, onClose, car }: Props) {
       year: car.year,
       mileage: car.mileage,
       status: car.status,
-      osagoBefore: car.osagoBefore ?? '',
-      inspectionBefore: car.inspectionBefore ?? '',
+      osagoBefore: toDateInput(car.osagoBefore),
+      inspectionBefore: toDateInput(car.inspectionBefore),
     } : { status: 'FREE' },
   })
 
@@ -53,16 +56,21 @@ export function CarFormModal({ open, onClose, car }: Props) {
       reset(car ? {
         plateNumber: car.plateNumber, vin: car.vin, brand: car.brand, model: car.model,
         year: car.year, mileage: car.mileage, status: car.status,
-        osagoBefore: car.osagoBefore ?? '', inspectionBefore: car.inspectionBefore ?? '',
+        osagoBefore: toDateInput(car.osagoBefore), inspectionBefore: toDateInput(car.inspectionBefore),
       } : { status: 'FREE' })
     }
   }, [open, car, reset])
 
   const onSubmit = async (data: FormData) => {
+    const payload = {
+      ...data,
+      osagoBefore: data.osagoBefore ? toRFC3339(data.osagoBefore) : undefined,
+      inspectionBefore: data.inspectionBefore ? toRFC3339(data.inspectionBefore) : undefined,
+    }
     if (car) {
-      await updateCar({ id: car.id, ...data }).unwrap()
+      await updateCar({ id: car.id, ...payload }).unwrap()
     } else {
-      await createCar(data).unwrap()
+      await createCar(payload).unwrap()
     }
     onClose()
   }
