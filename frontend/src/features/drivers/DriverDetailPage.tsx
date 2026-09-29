@@ -43,20 +43,20 @@ export function DriverDetailPage() {
   if (!driver) return <div style={{ color: 'var(--color-text-muted)', padding: 40 }}>Водитель не найден</div>
 
   const contracts: Contract[] = (driver.contracts ?? []) as unknown as Contract[]
+  const sortedContracts = [...contracts].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
   const activeContract = contracts.find(c => c.status === 'ACTIVE')
-  const payments: Payment[] = (activeContract?.payments ?? []) as Payment[]
+  const displayContract = activeContract ?? sortedContracts[0] ?? null
+  const payments: Payment[] = (displayContract?.payments ?? []) as Payment[]
   const sortedPayments = [...payments].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-  const nextUnpaid = sortedPayments.find(p => p.status !== 'PAID')
 
-  const paidAmount = Number(activeContract?.paidAmount ?? 0)
-  const totalAmount = Number(activeContract?.totalAmount ?? 0)
+  const paidAmount = Number(displayContract?.paidAmount ?? 0)
+  const totalAmount = Number(displayContract?.totalAmount ?? 0)
   const remaining = totalAmount - paidAmount
   const progress = totalAmount > 0 ? Math.min(100, Math.round((paidAmount / totalAmount) * 100)) : 0
 
   // События
   const events: { color: string; title: string; subtitle: string }[] = []
   events.push({ color: '#6B3FE4', title: 'Клиент добавлен в систему', subtitle: formatDate(driver.createdAt) })
-  const sortedContracts = [...contracts].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
   for (const c of sortedContracts) {
     const car = (c as any).car
     const plate = car?.plateNumber ?? '—'
@@ -113,21 +113,21 @@ export function DriverDetailPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
 
         {/* Left — buyout card */}
-        {activeContract ? (
+        {displayContract ? (
           <div className="card">
             {/* Contract header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Выкуп автомобиля</span>
                 <Link
-                  to={`/cars/${(activeContract as any).car?.id ?? ''}`}
+                  to={`/cars/${(displayContract as any).car?.id ?? ''}`}
                   style={{ padding: '3px 10px', borderRadius: '999px', background: 'rgba(107,63,228,0.15)', color: 'var(--color-accent-text)', fontSize: '13px', fontWeight: 600, textDecoration: 'none', fontFamily: 'var(--font-mono)' }}
                 >
-                  {(activeContract as any).car?.plateNumber ?? '—'}
+                  {(displayContract as any).car?.plateNumber ?? '—'}
                 </Link>
               </div>
               <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                {formatDate(activeContract.startDate)}{activeContract.endDate ? ` — ${formatDate(activeContract.endDate)}` : ''}
+                {formatDate(displayContract.startDate)}{displayContract.endDate ? ` — ${formatDate(displayContract.endDate)}` : ''}
               </span>
             </div>
 
@@ -142,7 +142,7 @@ export function DriverDetailPage() {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <p style={{ margin: '0 0 2px', fontSize: '12px', color: 'var(--color-text-muted)' }}>Платёж/мес</p>
-                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatMoney(activeContract.monthlyPayment)}</p>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{formatMoney(displayContract.monthlyPayment)}</p>
                 </div>
               </div>
             </div>
@@ -159,33 +159,60 @@ export function DriverDetailPage() {
               </div>
             </div>
 
-            {/* Payment months grid */}
-            {sortedPayments.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
-                {sortedPayments.map((p) => {
-                  const d = new Date(p.dueDate)
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => p.status !== 'PAID' && setPayModal(p)}
-                      style={{
-                        padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--color-neutral-border)',
-                        background: 'rgba(186,214,247,0.04)', textAlign: 'left', cursor: p.status !== 'PAID' ? 'pointer' : 'default',
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseEnter={e => p.status !== 'PAID' && (e.currentTarget.style.background = 'rgba(186,214,247,0.09)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(186,214,247,0.04)')}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}>{MONTHS_RU[d.getMonth()]}</span>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor(p.status), flexShrink: 0 }} />
+            {/* Payment months grid — grouped by year */}
+            {sortedPayments.length > 0 && (() => {
+              const currentYear = new Date().getFullYear()
+              const byYear: Record<number, Payment[]> = {}
+              for (const p of sortedPayments) {
+                const y = new Date(p.dueDate).getFullYear()
+                if (!byYear[y]) byYear[y] = []
+                byYear[y].push(p)
+              }
+              const years = Object.keys(byYear).map(Number).sort((a, b) => b - a)
+              const multiYear = years.length > 1
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {years.map(year => {
+                    const all = byYear[year]
+                    const visible = all
+                    if (visible.length === 0) return null
+                    return (
+                      <div key={year}>
+                        {multiYear && (
+                          <p style={{ margin: '0 0 10px', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{year}</p>
+                        )}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
+                          {visible.map(p => {
+                            const d = new Date(p.dueDate)
+                            const clickable = p.status !== 'PAID'
+                            return (
+                              <button
+                                key={p.id}
+                                onClick={() => clickable && setPayModal(p)}
+                                style={{
+                                  padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--color-neutral-border)',
+                                  background: 'rgba(186,214,247,0.04)', textAlign: 'left',
+                                  cursor: clickable ? 'pointer' : 'default', transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => clickable && (e.currentTarget.style.background = 'rgba(186,214,247,0.09)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(186,214,247,0.04)')}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-secondary)' }}>{MONTHS_RU[d.getMonth()]}</span>
+                                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor(p.status), flexShrink: 0 }} />
+                                </div>
+                                <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>{formatMoney(p.amount)}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
                       </div>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>{formatMoney(p.amount)}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
         ) : (
           <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
@@ -210,21 +237,6 @@ export function DriverDetailPage() {
             </div>
           </div>
 
-          {/* Action buttons */}
-          <button
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: 600, borderRadius: '14px' }}
-            disabled={!nextUnpaid}
-            onClick={() => nextUnpaid && setPayModal(nextUnpaid)}
-          >
-            Принять платёж
-          </button>
-          <button
-            className="btn btn-secondary"
-            style={{ width: '100%', padding: '13px', fontSize: '14px', borderRadius: '14px' }}
-          >
-            Добавить заметку
-          </button>
         </div>
       </div>
 
@@ -276,10 +288,10 @@ export function DriverDetailPage() {
         error={deleteError}
         onConfirm={handleDelete}
       />
-      {payModal && activeContract && (
+      {payModal && displayContract && (
         <PaymentMarkModal
           payment={payModal}
-          car={(activeContract as any).car}
+          car={(displayContract as any).car}
           driver={{ fullName: driver.fullName }}
           onClose={() => setPayModal(null)}
           onSuccess={() => { setPayModal(null); refetch() }}

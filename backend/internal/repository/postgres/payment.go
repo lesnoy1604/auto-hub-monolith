@@ -89,9 +89,13 @@ func (r *paymentRepo) GetByID(ctx context.Context, id int) (*domain.Payment, err
 
 func (r *paymentRepo) BulkCreateTx(ctx context.Context, tx pgx.Tx, payments []domain.Payment) error {
 	for _, p := range payments {
+		status := domain.PaymentStatusUnpaid
+		if p.Status != "" {
+			status = p.Status
+		}
 		_, err := tx.Exec(ctx,
-			`INSERT INTO payments (contract_id, amount, status, due_date) VALUES ($1, $2, 'UNPAID', $3)`,
-			p.ContractID, p.Amount, p.DueDate,
+			`INSERT INTO payments (contract_id, amount, status, due_date, paid_at) VALUES ($1, $2, $3, $4, $5)`,
+			p.ContractID, p.Amount, status, p.DueDate, p.PaidAt,
 		)
 		if err != nil {
 			return err

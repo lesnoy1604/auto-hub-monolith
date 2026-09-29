@@ -208,8 +208,8 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Generate payment schedule
-		paymentMonths := 6
+		// Generate payment schedule: active contracts run to end of year (Apr–Dec = 9 months), completed = 12
+		paymentMonths := 9
 		if cc.status == domain.ContractStatusCompleted {
 			paymentMonths = 12
 		}
@@ -228,16 +228,14 @@ func main() {
 				paidTime := dueDate.Add(2 * 24 * time.Hour) // paid 2 days after due
 				paidAt = &paidTime
 				totalPaid = totalPaid.Add(cc.monthly)
-			} else if cc.isDebtor || cc.status == domain.ContractStatusCompleted {
-				if cc.status == domain.ContractStatusCompleted {
-					status = domain.PaymentStatusPaid
-					paidTime := dueDate.Add(3 * 24 * time.Hour)
-					paidAt = &paidTime
-					totalPaid = totalPaid.Add(cc.monthly)
-				} else {
-					status = domain.PaymentStatusOverdue
-				}
-			} else if dueDate.Before(now) {
+			} else if cc.status == domain.ContractStatusCompleted {
+				status = domain.PaymentStatusPaid
+				paidTime := dueDate.Add(3 * 24 * time.Hour)
+				paidAt = &paidTime
+				totalPaid = totalPaid.Add(cc.monthly)
+			} else if cc.isDebtor && dueDate.Before(now) {
+				status = domain.PaymentStatusOverdue
+			} else {
 				status = domain.PaymentStatusUnpaid
 			}
 
