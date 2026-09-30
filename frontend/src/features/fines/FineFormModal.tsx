@@ -50,7 +50,7 @@ export function FineFormModal({ open, onClose, preselectedCarId }: Props) {
       contractId: data.contractId || undefined,
       amount: data.amount,
       description: data.description,
-      fineDate: data.fineDate,
+      fineDate: `${data.fineDate}T00:00:00Z`,
     }).unwrap()
     onClose()
   }

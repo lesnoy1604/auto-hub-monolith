@@ -71,13 +71,17 @@ export function ContractFormModal({ open, onClose, contract, preselectedCarId, p
   }, [open, contract, isEdit, editForm, preselectedCarId, createForm])
 
   const onSubmitCreate = async (data: CreateData) => {
-    await createContract(data).unwrap()
+    await createContract({ ...data, startDate: data.startDate + 'T00:00:00Z' }).unwrap()
     onClose()
   }
 
   const onSubmitEdit = async (data: EditData) => {
     if (!contract) return
-    await updateContract({ id: contract.id, ...data }).unwrap()
+    await updateContract({
+      id: contract.id,
+      ...data,
+      endDate: data.endDate ? `${data.endDate}T00:00:00Z` : undefined,
+    }).unwrap()
     onClose()
   }
 
