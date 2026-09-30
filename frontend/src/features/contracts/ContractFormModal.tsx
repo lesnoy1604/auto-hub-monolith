@@ -146,7 +146,7 @@ export function ContractFormModal({ open, onClose, contract, preselectedCarId, p
             </div>
           )}
           <ErrorBlock />
-          <Buttons disabled={isLoading || freeCars.length === 0} />
+          <Buttons disabled={isLoading || (!preselectedCarId && freeCars.length === 0)} />
         </form>
       )}
     </Modal>
