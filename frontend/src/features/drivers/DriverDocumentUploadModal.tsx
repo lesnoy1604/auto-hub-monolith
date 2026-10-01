@@ -5,7 +5,6 @@ import { useUploadDriverDocumentMutation } from './driverDocumentsApi'
 const DOC_TYPES: { value: DriverDocType; label: string }[] = [
   { value: 'passport', label: 'Паспорт' },
   { value: 'license', label: 'Водительское удостоверение' },
-  { value: 'contract', label: 'Договор' },
   { value: 'photo', label: 'Фото' },
   { value: 'other', label: 'Другое' },
 ]

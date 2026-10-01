@@ -33,6 +33,18 @@ export const contractsApi = createApi({
       query: (id) => ({ url: `/contracts/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Contract'],
     }),
+    uploadContractDocument: builder.mutation<{ documentUrl: string }, { id: number; file: File }>({
+      query: ({ id, file }) => {
+        const form = new FormData()
+        form.append('file', file)
+        return { url: `/contracts/${id}/document`, method: 'POST', body: form }
+      },
+      invalidatesTags: (_r, _e, { id }) => [{ type: 'Contract', id }],
+    }),
+    deleteContractDocument: builder.mutation<void, number>({
+      query: (id) => ({ url: `/contracts/${id}/document`, method: 'DELETE' }),
+      invalidatesTags: (_r, _e, id) => [{ type: 'Contract', id }],
+    }),
   }),
 })
 
@@ -43,4 +55,6 @@ export const {
   useUpdateContractMutation,
   useGetContractPaymentsQuery,
   useDeleteContractMutation,
+  useUploadContractDocumentMutation,
+  useDeleteContractDocumentMutation,
 } = contractsApi

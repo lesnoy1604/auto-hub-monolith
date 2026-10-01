@@ -18,14 +18,14 @@ func NewContractRepository(db *pgxpool.Pool) *contractRepo {
 	return &contractRepo{db: db}
 }
 
-const contractColumns = `id, car_id, driver_id, status, total_amount, paid_amount, monthly_payment, start_date, end_date, created_at, updated_at`
+const contractColumns = `id, car_id, driver_id, status, total_amount, paid_amount, monthly_payment, start_date, end_date, document_url, created_at, updated_at`
 
 func scanContract(row pgx.Row) (*domain.Contract, error) {
 	c := &domain.Contract{}
 	err := row.Scan(
 		&c.ID, &c.CarID, &c.DriverID, &c.Status,
 		&c.TotalAmount, &c.PaidAmount, &c.MonthlyPayment,
-		&c.StartDate, &c.EndDate, &c.CreatedAt, &c.UpdatedAt,
+		&c.StartDate, &c.EndDate, &c.DocumentURL, &c.CreatedAt, &c.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -54,7 +54,7 @@ func (r *contractRepo) List(ctx context.Context, status *domain.ContractStatus) 
 		if err := rows.Scan(
 			&c.ID, &c.CarID, &c.DriverID, &c.Status,
 			&c.TotalAmount, &c.PaidAmount, &c.MonthlyPayment,
-			&c.StartDate, &c.EndDate, &c.CreatedAt, &c.UpdatedAt,
+			&c.StartDate, &c.EndDate, &c.DocumentURL, &c.CreatedAt, &c.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -114,6 +114,17 @@ func (r *contractRepo) UpdateTx(ctx context.Context, tx pgx.Tx, id int, c *domai
 		c.Status, c.EndDate, c.MonthlyPayment, c.TotalAmount, id,
 	)
 	return scanContract(row)
+}
+
+func (r *contractRepo) UpdateDocumentURL(ctx context.Context, id int, url *string) error {
+	tag, err := r.db.Exec(ctx, `UPDATE contracts SET document_url=$1 WHERE id=$2`, url, id)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
 }
 
 func (r *contractRepo) UpdatePaidAmount(ctx context.Context, id int, paidAmount decimal.Decimal) error {

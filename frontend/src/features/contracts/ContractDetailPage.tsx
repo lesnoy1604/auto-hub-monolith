@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
-import { useGetContractByIdQuery, useDeleteContractMutation } from './contractsApi'
+import { useGetContractByIdQuery, useDeleteContractMutation, useUploadContractDocumentMutation, useDeleteContractDocumentMutation } from './contractsApi'
 import { ContractStatusBadge } from './ContractStatusBadge'
 import { ContractFormModal } from './ContractFormModal'
 import { PaymentMarkModal } from '@/features/payments/PaymentMarkModal'
@@ -17,10 +17,31 @@ export function ContractDetailPage() {
   const navigate = useNavigate()
   const { data: contract, isLoading, refetch } = useGetContractByIdQuery(contractId)
   const [deleteContract, { isLoading: deleting }] = useDeleteContractMutation()
+  const [uploadDocument, { isLoading: uploadingDoc }] = useUploadContractDocumentMutation()
+  const [deleteDocument] = useDeleteContractDocumentMutation()
   const [showEditModal, setShowEditModal] = useState(false)
   const [payModal, setPayModal] = useState<Payment | null>(null)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [docError, setDocError] = useState('')
+  const [confirmDeleteDoc, setConfirmDeleteDoc] = useState(false)
+
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setDocError('')
+    try {
+      await uploadDocument({ id: contractId, file }).unwrap()
+    } catch {
+      setDocError('Ошибка при загрузке')
+    }
+    e.target.value = ''
+  }
+
+  const handleDocDelete = async () => {
+    await deleteDocument(contractId)
+    setConfirmDeleteDoc(false)
+  }
 
   const handleDelete = async () => {
     try {
@@ -145,6 +166,41 @@ export function ContractDetailPage() {
               ))}
             </tbody>
           </table>
+        )}
+      </div>
+
+      {/* Contract document */}
+      <div className="card" style={{ marginTop: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: contract.documentUrl ? 16 : 0 }}>
+          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Скан договора</h3>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {docError && <span style={{ fontSize: 12, color: '#C62828' }}>{docError}</span>}
+            <label style={{ padding: '6px 14px', borderRadius: 10, border: 'none', background: 'var(--color-accent-bg)', color: 'var(--color-accent-text)', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>
+              {uploadingDoc ? 'Загрузка...' : contract.documentUrl ? 'Заменить' : '+ Загрузить'}
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display: 'none' }} onChange={handleDocUpload} disabled={uploadingDoc} />
+            </label>
+          </div>
+        </div>
+        {contract.documentUrl && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, background: 'var(--color-surface)', border: '1px solid var(--color-neutral-border)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: '#6B3FE420', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B3FE4', flexShrink: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <span style={{ flex: 1, fontSize: 14, color: 'var(--color-text-primary)' }}>Договор №{contract.id}</span>
+            <a href={contract.documentUrl} target="_blank" rel="noreferrer" style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--color-neutral-border)', fontSize: 12, color: 'var(--color-text-muted)', textDecoration: 'none' }}>
+              Открыть
+            </a>
+            {confirmDeleteDoc ? (
+              <>
+                <button onClick={handleDocDelete} style={{ padding: '6px 10px', borderRadius: 8, border: 'none', background: '#C62828', color: 'white', cursor: 'pointer', fontSize: 12 }}>Удалить</button>
+                <button onClick={() => setConfirmDeleteDoc(false)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--color-neutral-border)', background: 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--color-text-muted)' }}>Отмена</button>
+              </>
+            ) : (
+              <button onClick={() => setConfirmDeleteDoc(true)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #FDEAEA', background: 'transparent', cursor: 'pointer', fontSize: 12, color: '#C62828' }}>✕</button>
+            )}
+          </div>
         )}
       </div>
 

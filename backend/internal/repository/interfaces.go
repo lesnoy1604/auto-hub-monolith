@@ -41,6 +41,7 @@ type ContractRepository interface {
 	CreateTx(ctx context.Context, tx pgx.Tx, c *domain.Contract) (*domain.Contract, error)
 	Update(ctx context.Context, id int, c *domain.Contract) (*domain.Contract, error)
 	UpdateTx(ctx context.Context, tx pgx.Tx, id int, c *domain.Contract) (*domain.Contract, error)
+	UpdateDocumentURL(ctx context.Context, id int, url *string) error
 	UpdatePaidAmount(ctx context.Context, id int, paidAmount decimal.Decimal) error
 	UpdatePaidAmountTx(ctx context.Context, tx pgx.Tx, id int, paidAmount decimal.Decimal) error
 	Delete(ctx context.Context, id int) error

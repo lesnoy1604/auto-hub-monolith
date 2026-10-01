@@ -55,6 +55,7 @@ export interface Contract {
   startDate: string
   endDate: string | null
   status: ContractStatus
+  documentUrl?: string | null
   car?: Car
   driver?: Driver
   payments?: Payment[]

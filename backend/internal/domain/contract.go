@@ -24,6 +24,7 @@ type Contract struct {
 	MonthlyPayment decimal.Decimal `json:"monthlyPayment"`
 	StartDate      time.Time       `json:"startDate"`
 	EndDate        *time.Time      `json:"endDate"`
+	DocumentURL    *string         `json:"documentUrl"`
 	CreatedAt      time.Time       `json:"createdAt"`
 	UpdatedAt      time.Time       `json:"updatedAt"`
 }

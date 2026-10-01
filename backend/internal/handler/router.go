@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	appmiddleware "github.com/dutik/auto-hub/internal/middleware"
+	"github.com/dutik/auto-hub/internal/repository/postgres"
 	"github.com/dutik/auto-hub/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,6 +25,7 @@ func NewRouter(
 	inspectionSvc *service.InspectionService,
 	driverDocSvc *service.DriverDocumentService,
 	uploadsDir string,
+	uploadsURL string,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -42,7 +44,8 @@ func NewRouter(
 	healthH := NewHealthHandler(pool)
 	carH := NewCarHandler(carSvc)
 	driverH := NewDriverHandler(driverSvc)
-	contractH := NewContractHandler(contractSvc)
+	contractRepo := postgres.NewContractRepository(pool)
+	contractH := NewContractHandler(contractSvc, contractRepo, uploadsDir, uploadsURL)
 	paymentH := NewPaymentHandler(paymentSvc)
 	fineH := NewFineHandler(fineSvc)
 	dashboardH := NewDashboardHandler(dashboardSvc)
@@ -83,6 +86,8 @@ func NewRouter(
 		r.Put("/api/contracts/{id}", contractH.Update)
 		r.Delete("/api/contracts/{id}", contractH.Delete)
 		r.Get("/api/contracts/{id}/payments", contractH.GetPayments)
+		r.Post("/api/contracts/{id}/document", contractH.UploadDocument)
+		r.Delete("/api/contracts/{id}/document", contractH.DeleteDocument)
 
 		r.Get("/api/payments", paymentH.List)
 		r.Post("/api/payments", paymentH.Pay)

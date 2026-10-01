@@ -95,7 +95,7 @@ func main() {
 	driverDocSvc := service.NewDriverDocumentService(driverDocRepo, uploadsDir, uploadsURL)
 
 	// Роутер
-	r := handler.NewRouter(pool, authSvc, carSvc, driverSvc, contractSvc, paymentSvc, fineSvc, dashboardSvc, inspectionSvc, driverDocSvc, uploadsDir)
+	r := handler.NewRouter(pool, authSvc, carSvc, driverSvc, contractSvc, paymentSvc, fineSvc, dashboardSvc, inspectionSvc, driverDocSvc, uploadsDir, uploadsURL)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

@@ -1,20 +1,29 @@
 package handler
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/dutik/auto-hub/internal/dto"
+	"github.com/dutik/auto-hub/internal/repository"
 	"github.com/dutik/auto-hub/internal/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type ContractHandler struct {
-	svc *service.ContractService
+	svc        *service.ContractService
+	uploadsDir string
+	uploadsURL string
+	repo       repository.ContractRepository
 }
 
-func NewContractHandler(svc *service.ContractService) *ContractHandler {
-	return &ContractHandler{svc: svc}
+func NewContractHandler(svc *service.ContractService, repo repository.ContractRepository, uploadsDir, uploadsURL string) *ContractHandler {
+	return &ContractHandler{svc: svc, repo: repo, uploadsDir: uploadsDir, uploadsURL: uploadsURL}
 }
 
 // List godoc
@@ -167,4 +176,88 @@ func (h *ContractHandler) GetPayments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	JSON(w, http.StatusOK, payments)
+}
+
+func (h *ContractHandler) UploadDocument(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		Error(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	if err := r.ParseMultipartForm(20 << 20); err != nil {
+		Error(w, http.StatusBadRequest, "failed to parse form (max 20 MB)")
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		Error(w, http.StatusBadRequest, "file required")
+		return
+	}
+	defer file.Close()
+
+	// Удаляем старый файл если есть
+	existing, err := h.repo.GetByID(r.Context(), id)
+	if err != nil {
+		HandleError(w, err)
+		return
+	}
+	if existing.DocumentURL != nil {
+		old := filepath.Join(h.uploadsDir, "contracts", filepath.Base(*existing.DocumentURL))
+		_ = os.Remove(old)
+	}
+
+	ext := filepath.Ext(header.Filename)
+	if ext == "" {
+		ext = ".bin"
+	}
+	relPath := fmt.Sprintf("contracts/%s%s", uuid.New().String(), ext)
+	absPath := filepath.Join(h.uploadsDir, relPath)
+
+	if err := os.MkdirAll(filepath.Dir(absPath), 0755); err != nil {
+		HandleError(w, err)
+		return
+	}
+	dst, err := os.Create(absPath)
+	if err != nil {
+		HandleError(w, err)
+		return
+	}
+	defer dst.Close()
+	if _, err := io.Copy(dst, file); err != nil {
+		HandleError(w, err)
+		return
+	}
+
+	url := h.uploadsURL + "/" + relPath
+	if err := h.repo.UpdateDocumentURL(r.Context(), id, &url); err != nil {
+		HandleError(w, err)
+		return
+	}
+	JSON(w, http.StatusOK, map[string]string{"documentUrl": url})
+}
+
+func (h *ContractHandler) DeleteDocument(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		Error(w, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	existing, err := h.repo.GetByID(r.Context(), id)
+	if err != nil {
+		HandleError(w, err)
+		return
+	}
+	if existing.DocumentURL != nil {
+		old := filepath.Join(h.uploadsDir, "contracts", filepath.Base(*existing.DocumentURL))
+		_ = os.Remove(old)
+	}
+
+	if err := h.repo.UpdateDocumentURL(r.Context(), id, nil); err != nil {
+		HandleError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
