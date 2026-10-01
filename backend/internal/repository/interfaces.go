@@ -65,6 +65,12 @@ type InspectionRepository interface {
 	ListByCarID(ctx context.Context, carID int) ([]domain.CarInspection, error)
 }
 
+type DriverDocumentRepository interface {
+	Create(ctx context.Context, driverID int, docType domain.DriverDocType, title, filename string) (*domain.DriverDocument, error)
+	ListByDriverID(ctx context.Context, driverID int) ([]domain.DriverDocument, error)
+	Delete(ctx context.Context, id int) (*domain.DriverDocument, error)
+}
+
 type FineRepository interface {
 	List(ctx context.Context, status *domain.FineStatus, carID *int, driverID *int) ([]domain.Fine, error)
 	GetByID(ctx context.Context, id int) (*domain.Fine, error)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
 import { useGetDriverByIdQuery, useDeleteDriverMutation } from './driversApi'
 import { DriverFormModal } from './DriverFormModal'
+import { DriverDocumentsCard } from './DriverDocumentsCard'
 import { ContractStatusBadge } from '@/features/contracts/ContractStatusBadge'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { PaymentMarkModal } from '@/features/payments/PaymentMarkModal'
@@ -277,6 +278,8 @@ export function DriverDetailPage() {
           </table>
         )}
       </div>
+
+      <DriverDocumentsCard driverId={driverId} />
 
       <DriverFormModal open={showEditModal} onClose={() => setShowEditModal(false)} driver={driver} />
       <ConfirmDialog

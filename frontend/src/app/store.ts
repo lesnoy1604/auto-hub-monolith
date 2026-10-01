@@ -7,6 +7,7 @@ import { paymentsApi } from '@/features/payments/paymentsApi'
 import { finesApi } from '@/features/fines/finesApi'
 import { dashboardApi } from '@/features/dashboard/dashboardApi'
 import { inspectionsApi } from '@/features/cars/inspectionsApi'
+import { driverDocumentsApi } from '@/features/drivers/driverDocumentsApi'
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     [finesApi.reducerPath]: finesApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [inspectionsApi.reducerPath]: inspectionsApi.reducer,
+    [driverDocumentsApi.reducerPath]: driverDocumentsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -27,7 +29,8 @@ export const store = configureStore({
       .concat(paymentsApi.middleware)
       .concat(finesApi.middleware)
       .concat(dashboardApi.middleware)
-      .concat(inspectionsApi.middleware),
+      .concat(inspectionsApi.middleware)
+      .concat(driverDocumentsApi.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

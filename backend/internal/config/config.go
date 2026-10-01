@@ -10,6 +10,7 @@ type Config struct {
 	JWTSecret   string
 	Port        string
 	Env         string
+	UploadsURL  string
 }
 
 func Load() (*Config, error) {
@@ -18,6 +19,7 @@ func Load() (*Config, error) {
 		JWTSecret:   os.Getenv("JWT_SECRET"),
 		Port:        os.Getenv("PORT"),
 		Env:         os.Getenv("ENV"),
+		UploadsURL:  os.Getenv("UPLOADS_URL"),
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -31,6 +33,9 @@ func Load() (*Config, error) {
 	}
 	if cfg.Env == "" {
 		cfg.Env = "development"
+	}
+	if cfg.UploadsURL == "" {
+		cfg.UploadsURL = "http://localhost:" + cfg.Port + "/uploads"
 	}
 
 	return cfg, nil

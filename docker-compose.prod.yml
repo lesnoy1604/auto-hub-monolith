@@ -22,6 +22,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       PORT: "8080"
       ENV: production
+      UPLOADS_URL: /uploads
     depends_on:
       db:
         condition: service_healthy

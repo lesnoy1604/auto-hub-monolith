@@ -9,6 +9,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': process.env.VITE_BACKEND_URL || 'http://localhost:8080',
+      '/uploads': process.env.VITE_BACKEND_URL || 'http://localhost:8080',
     },
   },
 })

@@ -22,6 +22,7 @@ func NewRouter(
 	fineSvc *service.FineService,
 	dashboardSvc *service.DashboardService,
 	inspectionSvc *service.InspectionService,
+	driverDocSvc *service.DriverDocumentService,
 	uploadsDir string,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -46,6 +47,7 @@ func NewRouter(
 	fineH := NewFineHandler(fineSvc)
 	dashboardH := NewDashboardHandler(dashboardSvc)
 	inspectionH := NewInspectionHandler(inspectionSvc)
+	driverDocH := NewDriverDocumentHandler(driverDocSvc)
 
 	// Swagger UI
 	r.Get("/swagger/*", httpSwagger.Handler(
@@ -96,6 +98,10 @@ func NewRouter(
 		r.Post("/api/cars/{id}/inspections", inspectionH.Create)
 		r.Get("/api/cars/{id}/inspections", inspectionH.ListByCarID)
 		r.Post("/api/inspections/{id}/photos", inspectionH.UploadPhoto)
+
+		r.Get("/api/drivers/{id}/documents", driverDocH.ListByDriverID)
+		r.Post("/api/drivers/{id}/documents", driverDocH.Upload)
+		r.Delete("/api/driver-documents/{id}", driverDocH.Delete)
 	})
 
 	return r
