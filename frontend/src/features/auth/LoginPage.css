@@ -1,0 +1,207 @@
+.lp-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px;
+  background: #07070b;
+  color: #ecebf5;
+  font-family: 'Onest', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tracks */
+.lp-tracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lp-tracks-m { display: none; pointer-events: none; }
+
+/* Form */
+.lp-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* Brand */
+.lp-brand { display: flex; gap: 5px; margin: 0; list-style: none; padding: 0; }
+.lp-brand-tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #16151f;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #ffffff;
+  width: 72px;
+  height: 100px;
+  border-radius: 8px;
+  font-size: 56px;
+}
+.lp-brand-tile--accent { background: #7c5cf0; }
+.lp-brand-split {
+  position: absolute; left: 0; right: 0; top: 49px; height: 3px;
+  background: #07070b; pointer-events: none;
+}
+.lp-brand-split--accent { background: #5b3fd0; }
+
+/* Field */
+.lp-field { display: flex; flex-direction: column; gap: 10px; cursor: text; }
+.lp-field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #8e8ea0;
+}
+
+/* Cells */
+.lp-cells { position: relative; display: flex; gap: 4px; }
+.lp-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #16151f;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 24px;
+  width: 32px;
+  height: 52px;
+  border-radius: 5px;
+  color: #ecebf5;
+  flex-shrink: 0;
+}
+.lp-cell--placeholder { color: #3a3850; }
+.lp-cell--active { box-shadow: inset 0 0 0 2px #a78bfa; }
+.lp-cells--password .lp-cell { color: #a78bfa; }
+.lp-cell-split {
+  position: absolute; left: 0; right: 0; top: 25px; height: 2px;
+  background: #07070b; pointer-events: none;
+}
+.lp-cells input {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; border: 0; padding: 0;
+  font-size: 16px; cursor: text;
+}
+
+/* Actions */
+.lp-actions { display: flex; align-items: center; gap: 28px; margin-top: 6px; }
+.lp-submit { display: flex; gap: 4px; padding: 0; border: 0; background: none; cursor: pointer; }
+.lp-submit:disabled { opacity: 0.7; cursor: default; }
+.lp-submit-tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #7c5cf0;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #ffffff;
+  width: 44px;
+  height: 60px;
+  border-radius: 6px;
+  font-size: 30px;
+}
+.lp-submit-split {
+  position: absolute; left: 0; right: 0; top: 29px; height: 2px;
+  background: #5b3fd0; pointer-events: none;
+}
+.lp-submit:not(:disabled):hover .lp-submit-tile { background: #8a6cf5; }
+.lp-forgot { font-size: 14px; color: #a78bfa; text-decoration: none; }
+.lp-forgot:hover { color: #c4b5fd; }
+
+/* Error */
+.lp-error {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #f87171;
+}
+
+/* Clock */
+.lp-clock { position: absolute; right: 48px; bottom: 40px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.lp-clock-time { display: flex; gap: 4px; align-items: center; }
+.lp-clock-tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #16151f;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #fbbf24;
+  width: 48px;
+  height: 64px;
+  border-radius: 6px;
+  font-size: 38px;
+}
+.lp-clock-split {
+  position: absolute; left: 0; right: 0; top: 31px; height: 2px;
+  background: #07070b; pointer-events: none;
+}
+.lp-clock-colon {
+  width: 18px; text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 38px; color: #fbbf24;
+}
+.lp-clock-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; letter-spacing: 3px; color: #5c5878;
+}
+
+/* ── Mobile ≤ 700px ─────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .lp-page { flex-direction: column; justify-content: center; align-items: center; padding: 148px 27px; }
+
+  .lp-tracks { display: none; }
+  .lp-tracks-m {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 132px;
+  }
+  .lp-tracks-m--top { top: 0; }
+  .lp-tracks-m--bottom { bottom: 0; }
+
+  .lp-corner { top: 60px; font-size: 11px; letter-spacing: 2px; }
+  .lp-corner--tl { left: 27px; }
+  .lp-corner--tr { right: 27px; gap: 6px; }
+  .lp-status-dot { width: 7px; height: 7px; }
+
+  .lp-form { width: 100%; max-width: 420px; gap: 26px; align-items: stretch; }
+
+  .lp-brand { gap: 4px; }
+  .lp-brand-tile { flex: 1 1 0; width: auto; height: 64px; font-size: 36px; border-radius: 7px; }
+  .lp-brand-split { top: 31px; height: 2px; }
+
+  .lp-field-label { font-size: 11px; }
+
+  .lp-cells { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .lp-cell { width: auto; height: 44px; font-size: 20px; }
+  .lp-cell-split { top: 21px; }
+
+  /* password: show only 10 cells on mobile */
+  .lp-cells--password .lp-cell:nth-child(n + 11) { display: none; }
+
+  .lp-actions { flex-direction: column; gap: 14px; margin-top: 4px; }
+  .lp-submit { width: 100%; }
+  .lp-submit-tile { flex: 1 1 0; width: auto; height: 56px; font-size: 28px; }
+  .lp-submit-split { top: 27px; }
+  .lp-forgot { height: 44px; display: flex; align-items: center; padding: 0 12px; justify-content: center; }
+
+  .lp-clock { position: static; align-items: center; gap: 8px; margin-top: 40px; }
+  .lp-clock-time { gap: 3px; }
+  .lp-clock-tile { width: 36px; height: 48px; font-size: 28px; border-radius: 5px; }
+  .lp-clock-split { top: 23px; }
+  .lp-clock-colon { width: 14px; font-size: 28px; }
+  .lp-clock-date { font-size: 11px; }
+}
